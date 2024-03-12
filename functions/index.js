@@ -1,4 +1,5 @@
 const {onRequest} = require("firebase-functions/v2/https");
+const bodyparser = require("body-parser");
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -10,6 +11,7 @@ const exports_ = require("./src/controller/export.js");
 const incidents = require("./src/controller/incident.js");
 const overview = require("./src/controller/overview.js");
 const mines = require("./src/controller/mine.js");
+const users = require("./src/controller/user.js");
 
 // setup express
 app.use(cors({
@@ -17,6 +19,8 @@ app.use(cors({
   methods: "GET,PUT,DELETE,POST",
   optionsSuccessStatus: 200,
 }));
+app.use(bodyparser.json());
+app.use(bodyparser.urlencoded({extended: false}));
 app.use(express.json({limit: "50mb"}));
 app.use(express.raw({limit: "50mb"}));
 
@@ -28,6 +32,7 @@ exports_(app);
 incidents(app);
 overview(app);
 mines(app);
+users(app);
 
 app.get("/", (req, res) => {
   res.send({

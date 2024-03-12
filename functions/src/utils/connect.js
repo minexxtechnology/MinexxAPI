@@ -1,5 +1,11 @@
 const {google} = require("googleapis");
 const spreadsheets = require("./sheets.json");
+const admin = require("firebase-admin");
+const account = require(`./minexx-dashboard-firebase-adminsdk-7c5hv-e3898ead71.json`);
+
+const firebase = admin.initializeApp({
+  credential: admin.credential.cert(account),
+});
 
 // auth client object creation
 const oauth2client = new google.auth.OAuth2({
@@ -31,6 +37,7 @@ const drive = google.drive({
 module.exports = {
   oauth2client,
   spreadsheets,
+  firebase,
   sheets,
   drive,
 };

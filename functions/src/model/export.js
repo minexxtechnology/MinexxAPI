@@ -36,6 +36,18 @@ class Export{
     exporterApplicationDocument
     scannedExportDocuments
     link
+    provisionalInvoice
+    cargoReceipt
+    packingReport
+    warehouseCert
+    insuranceCert
+    billOfLanding
+    telex
+    c2
+    mineSheets
+    processingSheets
+    customsDeclaration
+    tagList
 
     constructor(input){
         this.id = input.id
@@ -75,6 +87,18 @@ class Export{
         this.exporterApplicationDocument = input.exporterApplicationDocument || null
         this.scannedExportDocuments = input.scannedExportDocuments || null
         this.link = input.link || null
+        this.provisionalInvoice = input.provisionalInvoice || null
+        this.cargoReceipt = input.cargoReceipt || null
+        this.packingReport = input.packingReport || null
+        this.warehouseCert = input.warehouseCert || null
+        this.insuranceCert = input.insuranceCert || null
+        this.billOfLanding = input.billOfLanding || null
+        this.telex = input.telex || null
+        this.c2 = input.c2 || null
+        this.mineSheets = input.mineSheets || null
+        this.processingSheets = input.processingSheets || null
+        this.customsDeclaration = input.customsDeclaration || null
+        this.tagList = input.tagList || null
     }
 }
 

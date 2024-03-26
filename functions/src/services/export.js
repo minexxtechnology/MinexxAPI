@@ -161,6 +161,18 @@ const getExport = async (id) => {
     exporterApplicationDocument: single[header.indexOf(`Exporter Application Document`)],
     scannedExportDocuments: single[header.indexOf(`Scanned Export Documents`)],
     link: single[header.indexOf(`Track`)],
+    provisionalInvoice: single[header.indexOf(`Provisional Invoice`)],
+    cargoReceipt: single[header.indexOf(`Freight Forwarder’s Cargo Receipt`)],
+    packingReport: single[header.indexOf(`Alex Stewart Packing report `)],
+    warehouseCert: single[header.indexOf(`Original Warehouse Certificate`)],
+    insuranceCert: single[header.indexOf(`Certificate of insurance`)],
+    billOfLanding: single[header.indexOf(`Bill of Lading `)],
+    telex: single[header.indexOf(`Telex`)],
+    c2: single[header.indexOf(`C2 Form`)],
+    mineSheets: single[header.indexOf(`Mine Sheets`)],
+    processingSheets: single[header.indexOf(`Processing Sheets`)],
+    customsDeclaration: single[header.indexOf(`RRA Customs declaration`)],
+    tagList: single[header.indexOf(`Tag list`)],
   });
 
   try {
@@ -193,6 +205,42 @@ const getExport = async (id) => {
   } catch (err) {/* empty */}
   try {
     export_.scannedExportDocuments = await getFile(export_.scannedExportDocuments.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.tagList = await getFile(export_.tagList.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.provisionalInvoice = await getFile(export_.provisionalInvoice.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.cargoReceipt = await getFile(export_.cargoReceipt.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.packingReport = await getFile(export_.packingReport.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.warehouseCert = await getFile(export_.warehouseCert.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.insuranceCert = await getFile(export_.insuranceCert.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.billOfLanding = await getFile(export_.billOfLanding.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.telex = await getFile(export_.telex.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.c2 = await getFile(export_.c2.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.mineSheets = await getFile(export_.mineSheets.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.processingSheets = await getFile(export_.processingSheets.split(`/`)[1]);
+  } catch (err) {/* empty */}
+  try {
+    export_.customsDeclaration = await getFile(export_.customsDeclaration.split(`/`)[1]);
   } catch (err) {/* empty */}
 
   return export_;

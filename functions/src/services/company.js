@@ -92,7 +92,10 @@ const getCompanyShareholders = async (id) => {
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Company")] === id);
 
   for await (const single of rows) {
-    const image = await getFile(single[5].split("/")[1]);
+    let image = null;
+    try {
+      image = await getFile(single[5].split("/")[1]);
+    } catch (err) {/* empty body*/}
     const shareholder = new Shareholder({
       id: single[0],
       company: single[1],

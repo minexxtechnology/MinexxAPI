@@ -86,7 +86,7 @@ const incidentsOverview = async ()=> {
 };
 
 const incidentRisks = async ()=> {
-  const incidents = (await getIncidents());
+  const incidents = (await getIncidents()).filter((single)=>single.company === `ce62eb6o`);
   const risks = [0, 0, 0, 0, 0, 0, 0];
   incidents.map((single)=>{
     if (single.riskCategory.toLowerCase().includes("legitimacy")) {

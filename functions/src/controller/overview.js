@@ -1,8 +1,10 @@
+const {requireUser} = require("../middleware/requireUser");
 const {assessmentsOverview, exportsOverview, incidentsOverview, incidentRisks} = require("../services/overview");
 
 const getAssessmentsOverview = async (req, res) => {
   try {
-    const assessments = await assessmentsOverview();
+    const {user} = res.locals;
+    const assessments = await assessmentsOverview(user);
     res.send({
       success: false,
       ...assessments,
@@ -17,7 +19,8 @@ const getAssessmentsOverview = async (req, res) => {
 
 const getExportsOverview = async (req, res) => {
   try {
-    const exports = await exportsOverview();
+    const {user} = res.locals;
+    const exports = await exportsOverview(user);
     res.send({
       success: false,
       ...exports,
@@ -32,7 +35,8 @@ const getExportsOverview = async (req, res) => {
 
 const getIncidentsOverview = async (req, res) => {
   try {
-    const incidents = await incidentsOverview();
+    const {user} = res.locals;
+    const incidents = await incidentsOverview(user);
     res.send({
       success: false,
       ...incidents,
@@ -47,7 +51,8 @@ const getIncidentsOverview = async (req, res) => {
 
 const getIncidentRisks = async (req, res) => {
   try {
-    const risks = await incidentRisks();
+    const {user} = res.locals;
+    const risks = await incidentRisks(user);
     res.send({
       success: false,
       risks,
@@ -61,8 +66,8 @@ const getIncidentRisks = async (req, res) => {
 };
 
 module.exports = (app)=>{
-  app.get(`/overview/assessments`, getAssessmentsOverview);
-  app.get(`/overview/incidents`, getIncidentsOverview);
-  app.get(`/overview/exports`, getExportsOverview);
-  app.get(`/overview/risks`, getIncidentRisks);
+  app.get(`/overview/assessments`, requireUser, getAssessmentsOverview);
+  app.get(`/overview/incidents`, requireUser, getIncidentsOverview);
+  app.get(`/overview/exports`, requireUser, getExportsOverview);
+  app.get(`/overview/risks`, requireUser, getIncidentRisks);
 };

@@ -21,6 +21,10 @@ const getMines = async () => {
     }
   });
 
+  // if (user.type === `buyer`) {
+  //   mines = mines.filter((mine)=>user.companies.includes(mine.company));
+  // }
+
   return mines;
 };
 

@@ -3,7 +3,7 @@ const {sheets, spreadsheets} = require("../utils/connect");
 const {getCompany} = require("./company");
 const {getFile} = require("./file");
 
-const getExports = async () => {
+const getExports = async (user) => {
   const exports = [];
   const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.export, range: "Export!A:ZZ"});
   const header = results.data.values[0];
@@ -49,13 +49,30 @@ const getExports = async () => {
       scannedExportDocuments: single[header.indexOf(`Scanned Export Documents`)],
       link: single[header.indexOf(`Track`)],
     });
-    try {
-      export_.company = await getCompany(export_.company);
-    } catch (err) {/* empty */}
-    exports.push(export_);
+    if (user.type === `buyer`) {
+      if (user.companies.includes(export_.company)) {
+        try {
+          export_.company = await getCompany(export_.company);
+        } catch (err) {/* empty */}
+        if (user.email == "thaisarco@minexx.co") {
+          if (single.mineral !== "Tantalum") {
+            exports.push(export_);
+          }
+        } else {
+          if (single.mineral === "Tantalum") {
+            exports.push(export_);
+          }
+        }
+      }
+    } else {
+      try {
+        export_.company = await getCompany(export_.company);
+      } catch (err) {/* empty */}
+      exports.push(export_);
+    }
   }
 
-  return exports;
+  return exports.filter((exp)=>exp.company.mining);
 };
 
 const getCompanyExports = async (id) => {

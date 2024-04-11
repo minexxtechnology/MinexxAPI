@@ -1,8 +1,10 @@
 const {getMines, getMine, getMineImages, getMineVideos} = require("../services/mine");
+const {requireUser} = require("../middleware/requireUser");
 
 const getMinesHandler = async (req, res) => {
   try {
-    const mines = await getMines();
+    const {user} = res.locals;
+    const mines = await getMines(user);
 
     res.send({
       success: true,
@@ -88,9 +90,9 @@ const getMineVideosHandler = async (req, res) => {
 };
 
 module.exports = (app)=>{
-  app.get(`/mines`, getMinesHandler);
-  app.get(`/mines/:id`, getMineHandler);
-  app.get(`/mines/images/:id`, getMineImagesHandler);
-  app.get(`/mines/videos/:id`, getMineVideosHandler);
-  app.get(`/mines/company/:id`, getCompanyMinesHandler);
+  app.get(`/mines`, requireUser, getMinesHandler);
+  app.get(`/mines/:id`, requireUser, getMineHandler);
+  app.get(`/mines/images/:id`, requireUser, getMineImagesHandler);
+  app.get(`/mines/videos/:id`, requireUser, getMineVideosHandler);
+  app.get(`/mines/company/:id`, requireUser, getCompanyMinesHandler);
 };

@@ -2,7 +2,8 @@ const {getIncidents, getIncident, getCompanyIncidents, getMineIncidents} = requi
 
 const getIncidentsHandler = async (req, res) => {
   try {
-    const incidents = await getIncidents();
+    const {user} = res.locals;
+    const incidents = await getIncidents(user);
 
     res.send({
       success: true,

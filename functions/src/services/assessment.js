@@ -1,7 +1,7 @@
 const {sheets, spreadsheets} = require("../utils/connect");
 const {getFile} = require("./file");
 
-const getAssessments = async () => {
+const getAssessments = async (user) => {
   const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.assessment, range: "Assessment Form!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Mine/Concession Name")]);
@@ -19,7 +19,13 @@ const getAssessments = async () => {
       environment: row.slice(header.indexOf(`ENVIRONMENT`)+1, header.indexOf(`COMMUNITY IMPACT (Beyond CSR: Minexx Category)`)),
       community: row.slice(header.indexOf(`COMMUNITY IMPACT (Beyond CSR: Minexx Category)`)+1),
     };
-    assessments.push(assessment);
+    if (user.type === `buyer` || user.type === `investor`) {
+      if (user.companies.includes(row[header.length-3])) {
+        assessments.push(assessment);
+      }
+    } else {
+      assessments.push(assessment);
+    }
   });
 
   return {assessments, header};
@@ -28,8 +34,9 @@ const getAssessments = async () => {
 /**
  *
  * @param {String} id - Unique identifier for assessment being fetched
+ * @param {String} user - User object of the user making the request
  */
-const getMineAssessments = async (id) => {
+const getMineAssessments = async (id, user) => {
   const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.assessment, range: "Assessment Form!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Mine/Concession Name")] && item[header.indexOf("Mine/Concession Name")] === id );

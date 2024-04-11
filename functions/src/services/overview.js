@@ -1,12 +1,13 @@
-const {getCompanyAssessments} = require("./assessment");
+const {getAssessments} = require("./assessment");
 const {getExports} = require("./export");
 const {getIncidents} = require("./incident");
 const moment = require("moment");
 
-const assessmentsOverview = async ()=>{
-  let response = (await getCompanyAssessments("ce62eb6o"));
+const assessmentsOverview = async (user)=>{
+  let response = (await getAssessments(user));
   const header = response.header;
   response = response.assessments;
+
   let count = 0;
   const months = [
     moment().subtract(6, "months").toDate(),
@@ -31,8 +32,9 @@ const assessmentsOverview = async ()=>{
   return {assessments, count};
 };
 
-const exportsOverview = async ()=> {
-  const response = (await getExports()).filter((single)=>single.company.type === `Exporter` || single.company.name === `Minexx`);
+const exportsOverview = async (user)=> {
+  const response = (await getExports(user));
+
   const exports = [0, 0, 0, 0, 0, 0];
   let count = 0;
   let volume = 0;
@@ -45,7 +47,6 @@ const exportsOverview = async ()=> {
     moment().subtract(1, "months").toDate(),
     new Date(),
   ];
-
   response.map((single)=>{
     volume += Number(single.netWeight);
     months.map((month, i)=>{
@@ -59,8 +60,9 @@ const exportsOverview = async ()=> {
   return {exports, volume, count};
 };
 
-const incidentsOverview = async ()=> {
-  const response = (await getIncidents()).filter((single)=>single.company === `ce62eb6o`);
+const incidentsOverview = async (user)=> {
+  const response = (await getIncidents(user));
+
   const incidents = [0, 0, 0, 0, 0, 0];
   let count = 0;
   const months = [
@@ -85,8 +87,8 @@ const incidentsOverview = async ()=> {
   return {incidents, count};
 };
 
-const incidentRisks = async ()=> {
-  const incidents = (await getIncidents()).filter((single)=>single.company === `ce62eb6o`);
+const incidentRisks = async (user)=> {
+  const incidents = (await getIncidents(user));
   const risks = [0, 0, 0, 0, 0, 0, 0];
   incidents.map((single)=>{
     if (single.riskCategory.toLowerCase().includes("legitimacy")) {

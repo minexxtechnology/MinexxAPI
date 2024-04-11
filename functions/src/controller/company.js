@@ -1,8 +1,11 @@
+const {requireUser} = require("../middleware/requireUser");
 const {getCompanies, getCompany, getCompanyShareholders, getCompanyBeneficialOwners, getCompanyDocuments} = require("../services/company");
 
 const getCompaniesHandler = async (req, res) => {
   try {
-    const companies = await getCompanies();
+    const {user} = res.locals;
+    console.log(user);
+    const companies = await getCompanies(user);
 
     res.send({
       success: true,
@@ -85,9 +88,9 @@ const getCompanyDocumentsHandler = async (req, res) => {
 };
 
 module.exports = (app)=>{
-  app.get(`/companies`, getCompaniesHandler);
-  app.get(`/companies/:id`, getCompanyHandler);
-  app.get(`/owners/:id`, getCompanyBenficialOwnersHandler);
-  app.get(`/shareholders/:id`, getCompanyShareholdersHandler);
-  app.get(`/documents/:id`, getCompanyDocumentsHandler);
+  app.get(`/companies`, requireUser, getCompaniesHandler);
+  app.get(`/companies/:id`, requireUser, getCompanyHandler);
+  app.get(`/owners/:id`, requireUser, getCompanyBenficialOwnersHandler);
+  app.get(`/shareholders/:id`, requireUser, getCompanyShareholdersHandler);
+  app.get(`/documents/:id`, requireUser, getCompanyDocumentsHandler);
 };

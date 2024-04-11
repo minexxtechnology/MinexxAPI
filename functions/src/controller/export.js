@@ -1,8 +1,10 @@
+const {requireUser} = require("../middleware/requireUser");
 const {getExports, getExport} = require("../services/export");
 
 const getExportsHandler = async (req, res) => {
   try {
-    const exports = await getExports();
+    const {user} = res.locals;
+    const exports = await getExports(user);
 
     res.send({
       success: true,
@@ -34,6 +36,6 @@ const getExportHandler = async (req, res) => {
 };
 
 module.exports = (app)=>{
-  app.get(`/exports`, getExportsHandler);
-  app.get(`/exports/:id`, getExportHandler);
+  app.get(`/exports`, requireUser, getExportsHandler);
+  app.get(`/exports/:id`, requireUser, getExportHandler);
 };

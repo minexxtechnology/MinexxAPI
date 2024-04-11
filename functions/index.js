@@ -3,6 +3,8 @@ const bodyparser = require("body-parser");
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const {deserializeUser} = require("./src/middleware/deserializeUser");
+
 
 // import controller routers
 const assessments = require("./src/controller/assessment.js");
@@ -12,6 +14,7 @@ const incidents = require("./src/controller/incident.js");
 const overview = require("./src/controller/overview.js");
 const mines = require("./src/controller/mine.js");
 const users = require("./src/controller/user.js");
+const purchases = require("./src/controller/purchase.js");
 
 // setup express
 app.use(cors({
@@ -19,6 +22,7 @@ app.use(cors({
   methods: "GET,PUT,DELETE,POST",
   optionsSuccessStatus: 200,
 }));
+app.use(deserializeUser);
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended: false}));
 app.use(express.json({limit: "50mb"}));
@@ -33,6 +37,7 @@ incidents(app);
 overview(app);
 mines(app);
 users(app);
+purchases(app);
 
 app.get("/", (req, res) => {
   res.send({

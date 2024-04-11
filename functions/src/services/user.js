@@ -1,7 +1,26 @@
 const {default: axios} = require("axios");
 const {firebase} = require("../utils/connect");
 const {initializeApp} = require("firebase/app");
+const User = require("../model/user");
+const {omit} = require("lodash");
+const config = require("../config/default");
 const {sendPasswordResetEmail, getAuth} = require("firebase/auth");
+
+const createUser = async (input) => {
+  try {
+    const account = await firebase.auth().createUser({
+      displayName: `${input.name} ${input.surname}`,
+      email: input.email,
+      password: input.password,
+      photoURL: input.photoURL,
+    });
+    // await sendVerifyEmail(input.email, account.uid);
+    await firebase.firestore().collection(`users`).doc(account.uid).set( omit(input, `password`, `uid`) );
+    return account;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
 
 const requestResetPassword = async (email) => {
   const app = initializeApp({
@@ -15,6 +34,43 @@ const requestResetPassword = async (email) => {
   });
   await sendPasswordResetEmail(getAuth(app), email);
   return true;
+};
+
+const findUser = async (id) => {
+  try {
+    const account = await firebase.firestore().collection(`users`).doc(id).get();
+    if (!account.exists && account) {
+      throw new Error(`The user with the specified identifier was not found in our records.`);
+    }
+    const user = new User(account.data());
+    user.created = account.data()?.created.toDate();
+    user.updated = account.data()?.updated.toDate();
+    user.lastLogin = account.data()?.lastLogin.toDate();
+    user.uid = account.id;
+
+    return user;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
+const fetchUsers = async (status) => {
+  try {
+    const users = [];
+    const results = status ? await firebase.firestore().collection(`users`).where(`status`, `==`, status).get() : await firebase.firestore().collection(`users`).where(`status`, `!=`, `deleted`).get();
+
+    results.forEach((u)=>{
+      const user = new User(u.data());
+      user.uid = u.id;
+      user.created = u.createTime.toDate();
+      user.updated = u.updateTime.toDate();
+      user.lastLogin = u.data().lastLogin.toDate();
+      users.push(user);
+    });
+    return users;
+  } catch (e) {
+    throw new Error(e);
+  }
 };
 
 const changePassword = async (email, password, cpassword) => {
@@ -35,7 +91,30 @@ const changePassword = async (email, password, cpassword) => {
   }
 };
 
+const validatePassword = async ({email, password})=>{
+  try {
+    const response = await axios.post(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${config.apiKey}`, {
+      email,
+      password,
+      returnSecureToken: true,
+    });
+    await firebase.firestore().collection(`users`).doc(response.data.localId).update({
+      lastLogin: new Date(),
+    });
+    const account = await firebase.firestore().collection(`users`).doc(response.data.localId).get();
+    const user = account.data();
+    user.uid = account.id;
+    return user;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
 module.exports = {
+  findUser,
+  fetchUsers,
+  createUser,
   changePassword,
   requestResetPassword,
+  validatePassword,
 };

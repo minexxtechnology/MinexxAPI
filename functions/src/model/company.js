@@ -6,6 +6,7 @@ class Company{
     country
     type
     created
+    mining
 
     constructor(input){
         this.id = input.id
@@ -14,6 +15,7 @@ class Company{
         this.number = input.number || null
         this.country = input.country || null
         this.type = input.type || `Other`
+        this.mining = input.mining || false
         this.created = input.created || new Date()
     }
 }

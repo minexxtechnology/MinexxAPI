@@ -2,7 +2,7 @@ const Incident = require("../model/incident");
 const {sheets, spreadsheets} = require("../utils/connect");
 const {getFile} = require("./file");
 
-const getIncidents = async () => {
+const getIncidents = async (user) => {
   const incidents = [];
   const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.incident, range: "Incident Form!A:ZZ"});
 
@@ -27,7 +27,14 @@ const getIncidents = async () => {
       detailedDescription: single[header.indexOf("Detailed description of the incident below")],
       company: single[header.indexOf("Company Name")],
     });
-    incidents.push(incident);
+    if (user.type === `buyer` || user.type === `investor`) {
+      console.log("User has access to Company: ", user.companies.includes(incident.company));
+      if (user.companies.includes(incident.company)) {
+        incidents.push(incident);
+      }
+    } else {
+      incidents.push(incident);
+    }
   });
 
   return incidents;

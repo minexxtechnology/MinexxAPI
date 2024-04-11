@@ -4,8 +4,8 @@ const Shareholder = require("../model/shareholder");
 const {sheets, spreadsheets} = require("../utils/connect");
 const {getFile} = require("./file");
 
-const getCompanies = async () => {
-  const companies = [];
+const getCompanies = async (user) => {
+  let companies = [];
   const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.company, range: "Company!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")]);
@@ -19,9 +19,16 @@ const getCompanies = async () => {
       country: single[header.indexOf("Company Country")],
       type: single[header.indexOf("Type")],
       created: new Date(single[header.indexOf("Timestamp Signed")]),
+      mining: single[header.indexOf("Mining")] === `TRUE`,
     });
-    companies.push(company);
+    if (company.mining) {
+      companies.push(company);
+    }
   });
+
+  if (user.type === `buyer` || user.type === `investor`) {
+    companies = companies.filter((company)=>user.companies.includes(company.id));
+  }
 
   return companies;
 };
@@ -49,6 +56,7 @@ const getCompany = async (id) => {
     country: single[header.indexOf("Company Country")],
     type: single[header.indexOf("Type")],
     created: new Date(single[header.indexOf("Timestamp Signed")]),
+    mining: single[header.indexOf("Mining")] === `TRUE`,
   });
 
   return company;
@@ -70,7 +78,7 @@ const getCompanyBeneficialOwners = async (id) => {
       id: single[0],
       company: single[1],
       name: single[2],
-      percent: single[3]*100,
+      percent: Number(single[3])*100,
       nationality: single[4],
       nationalID: single[5],
       address: single[6],
@@ -100,7 +108,7 @@ const getCompanyShareholders = async (id) => {
       id: single[0],
       company: single[1],
       name: single[2],
-      percent: single[3]*100,
+      percent: Number(single[3])*100,
       nationality: single[4],
       nationalID: image,
       address: single[6],

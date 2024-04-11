@@ -1,8 +1,10 @@
+const {requireUser} = require("../middleware/requireUser");
 const {getAssessments, getMineAssessments} = require("../services/assessment");
 
 const getAssessmentsHandler = async (req, res) => {
   try {
-    const {assessments, header} = await getAssessments();
+    const {user} = res.locals;
+    const {assessments, header} = await getAssessments(user);
 
     res.send({
       success: true,
@@ -20,7 +22,8 @@ const getAssessmentsHandler = async (req, res) => {
 const getMineAssessmentHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const {assessments, header} = await getMineAssessments(id);
+    const {user} = res.locals;
+    const {assessments, header} = await getMineAssessments(id, user);
 
     res.send({
       success: true,
@@ -36,6 +39,6 @@ const getMineAssessmentHandler = async (req, res) => {
 };
 
 module.exports = (app)=>{
-  app.get(`/assessments`, getAssessmentsHandler);
-  app.get(`/assessments/mine/:id`, getMineAssessmentHandler);
+  app.get(`/assessments`, requireUser, getAssessmentsHandler);
+  app.get(`/assessments/mine/:id`, requireUser, getMineAssessmentHandler);
 };

@@ -10,6 +10,7 @@ class User{
     status
     type
     companies
+    minerals
     created
     updated
     lastLogin

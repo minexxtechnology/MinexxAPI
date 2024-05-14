@@ -22,6 +22,7 @@ class User{
         this.email = input.email
         this.password = input.password
         this.companies = input.companies || []
+        this.minerals = input.minerals || []
         this.phone = input.phone || null
         this.photoURL = input.photoURL || `https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6UoKMDDkR6Vm71IvuhKhIzMSCeUoG9oh3k7SMJ1qfWQ&s`
         this.status = input.status || `active`

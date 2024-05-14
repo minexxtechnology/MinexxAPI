@@ -27,8 +27,7 @@ const getIncidents = async (user) => {
       detailedDescription: single[header.indexOf("Detailed description of the incident below")],
       company: single[header.indexOf("Company Name")],
     });
-    if (user.type === `buyer` || user.type === `investor`) {
-      console.log("User has access to Company: ", user.companies.includes(incident.company));
+    if (user.type == `buyer` || user.type == `investor`) {
       if (user.companies.includes(incident.company)) {
         incidents.push(incident);
       }

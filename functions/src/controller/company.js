@@ -4,7 +4,6 @@ const {getCompanies, getCompany, getCompanyShareholders, getCompanyBeneficialOwn
 const getCompaniesHandler = async (req, res) => {
   try {
     const {user} = res.locals;
-    console.log(user);
     const companies = await getCompanies(user);
 
     res.send({

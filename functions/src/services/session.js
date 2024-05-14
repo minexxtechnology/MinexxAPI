@@ -12,8 +12,41 @@ const findSessions = async (query) => {
   return await firebase.firestore().collection(`sessions`).where(`user`, `==`, query).where(`valid`, `==`, true).orderBy(`updated`, `desc`).get();
 };
 
-const updateSession = async ( session, update) => {
-  return firebase.firestore().collection(`sessions`).doc(session).update(omit(update, `id`));
+const getSessions = async () => {
+  const sessions = [];
+  const docs = await firebase.firestore().collection(`sessions`).orderBy(`created`, `desc`).get();
+  docs.forEach((doc)=>{
+    const session = doc.data();
+    session.id = doc.id;
+    session.created = doc.createTime.toDate();
+    session.updated = doc.updateTime.toDate();
+    sessions.push(session);
+  });
+  return sessions;
+};
+
+const terminateSession = async (id) => {
+  try {
+    await firebase.firestore().collection(`sessions`).doc(id).update({
+      updated: new Date(),
+      valid: false,
+    });
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
+const terminateAll = async () => {
+  try {
+    await firebase.firestore().collection(`sessions`).where("valid", "==", true).update({
+      updated: new Date(),
+      valid: false,
+    });
+    return true;
+  } catch (err) {
+    return false;
+  }
 };
 
 const reIssueAccessToken = async ({refreshToken}) => {
@@ -40,6 +73,8 @@ const reIssueAccessToken = async ({refreshToken}) => {
 module.exports = {
   createSession,
   findSessions,
-  updateSession,
+  getSessions,
+  terminateSession,
+  terminateAll,
   reIssueAccessToken,
 };

@@ -28,7 +28,7 @@ const getAssessments = async (user) => {
     }
   });
 
-  return {assessments, header};
+  return {assessments: assessments.reverse(), header};
 };
 
 /**
@@ -68,7 +68,7 @@ const getMineAssessments = async (id, user) => {
     assessments.push(assessment);
   }
 
-  return {assessments, header};
+  return {assessments: assessments.reverse(), header};
 };
 
 /**
@@ -109,7 +109,7 @@ const getCompanyAssessments = async (id) => {
     }
   }
 
-  return {assessments, header};
+  return {assessments: assessments.reverse(), header};
 };
 
 module.exports = {

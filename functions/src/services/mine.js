@@ -64,10 +64,9 @@ const getMineImages = async (id) => {
   const images = [];
   const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.mine_image, range: "Mine Image!A:ZZ"});
   const header = results.data.values[0];
-  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Mine")] === id);
-  for await (const row of rows) {
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Image")] && item[header.indexOf("Mine")] === id);
+  for await (const row of rows.reverse()) {
     const image = await getFile(row[header.indexOf(`Image`)].split(`/`)[1]);
-    console.log(image);
     images.push(image);
   }
 

@@ -1,11 +1,14 @@
 const Export = require("../model/export");
 const {sheets, spreadsheets} = require("../utils/connect");
+const logger = require("../utils/logger");
 const {getCompany} = require("./company");
 const {getFile} = require("./file");
 
 const getExports = async (user) => {
+  if (user == null) {
+    throw new Error("You're missing valid session credentials.");
+  }
   const exports = [];
-  console.log("User: ", user);
   const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.export, range: "Export!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Exportation ID")]);
@@ -53,15 +56,21 @@ const getExports = async (user) => {
 
     try {
       export_.company = await getCompany(export_.company);
-    } catch (err) {/* empty */}
-    if (user.type === `buyer`) {
-      if (user.minerals.includes(export_.mineral)) {
-        exports.push(export_);
+    } catch (err) {
+      logger.warn("/exports", err.message, user.email, null);
+    }
+    if (user.type == `buyer`) {
+      if (user.minerals) {
+        if (user.minerals.includes(export_.mineral)) {
+          exports.push(export_);
+        }
       }
     } else {
       exports.push(export_);
     }
   }
+
+  console.info("Exports After: ", exports.length);
 
   return exports.reverse();
 };
@@ -114,7 +123,9 @@ const getCompanyExports = async (id) => {
     });
     try {
       export_.company = await getCompany(export_.company);
-    } catch (err) {/* empty */}
+    } catch (err) {
+      throw new Error(err.message);
+    }
     exports.push(export_);
   }
 

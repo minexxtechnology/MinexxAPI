@@ -1,5 +1,5 @@
 const {default: axios} = require("axios");
-const {firebase} = require("../utils/connect");
+const {firebase, sheets, spreadsheets} = require("../utils/connect");
 const {initializeApp} = require("firebase/app");
 const User = require("../model/user");
 const {omit} = require("lodash");
@@ -8,14 +8,16 @@ const {sendPasswordResetEmail, getAuth} = require("firebase/auth");
 
 const createUser = async (input) => {
   try {
+    const user = new User(input);
+    user.password = new Date().getTime().toString();
     const account = await firebase.auth().createUser({
-      displayName: `${input.name} ${input.surname}`,
-      email: input.email,
-      password: input.password,
-      photoURL: input.photoURL,
+      displayName: `${user.name} ${user.surname}`,
+      email: user.email,
+      password: user.password,
+      photoURL: user.photoURL,
     });
     // await sendVerifyEmail(input.email, account.uid);
-    await firebase.firestore().collection(`users`).doc(account.uid).set( omit(input, `password`, `uid`) );
+    await firebase.firestore().collection(`users`).doc(account.uid).set( omit(user, `password`, `uid`) );
     return account;
   } catch (e) {
     throw new Error(e);
@@ -54,19 +56,38 @@ const findUser = async (id) => {
   }
 };
 
-const fetchUsers = async (status) => {
+const fetchUsers = async (platform) => {
   try {
     const users = [];
-    const results = status ? await firebase.firestore().collection(`users`).where(`status`, `==`, status).get() : await firebase.firestore().collection(`users`).where(`status`, `!=`, `deleted`).get();
 
-    results.forEach((u)=>{
-      const user = new User(u.data());
-      user.uid = u.id;
-      user.created = u.createTime.toDate();
-      user.updated = u.updateTime.toDate();
-      user.lastLogin = u.data().lastLogin.toDate();
-      users.push(user);
-    });
+    if (platform === "dashboard") {
+      const results = await firebase.firestore().collection(`users`).where(`status`, `!=`, `deleted`).get();
+
+      results.forEach((u)=>{
+        const user = new User(u.data());
+        user.uid = u.id;
+        user.created = u.createTime.toDate();
+        user.updated = u.updateTime.toDate();
+        user.lastLogin = u.data().lastLogin.toDate();
+        users.push(user);
+      });
+    } else {
+      const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.users, range: "Users!A:ZZ"});
+      const header = results.data.values[0];
+      const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("User ID")]);
+
+      rows.forEach((row)=>{
+        const user = {
+          id: row[header.indexOf("User ID")],
+          email: row[header.indexOf("Email")],
+          name: row[header.indexOf("Name")],
+          company: row[header.indexOf("Company")],
+          country: row[header.indexOf("Country")],
+          role: row[header.indexOf("Role")],
+        };
+        users.push(user);
+      });
+    }
     return users;
   } catch (e) {
     throw new Error(e);

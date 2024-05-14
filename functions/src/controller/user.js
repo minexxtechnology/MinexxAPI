@@ -1,8 +1,9 @@
-const {requestResetPassword, changePassword, validatePassword} = require("../services/user");
+const {requestResetPassword, changePassword, validatePassword, fetchUsers, createUser} = require("../services/user");
 const Session = require("../model/session");
-const {createSession} = require("../services/session");
+const {createSession, terminateSession, terminateAll} = require("../services/session");
 const {signJwt} = require("../utils/jwt");
 const config = require("../config/default");
+const {requireAdmin} = require("../middleware/requireAdmin");
 
 const createSessionHandler = async (req, res) => {
   try {
@@ -39,11 +40,24 @@ const createSessionHandler = async (req, res) => {
       accessToken, refreshToken, user,
     });
   } catch (e) {
-    // logger.info(e);
-    console.log(e);
     return res.status(400).send({
       message: `The email/password combination did not match any of our records.`,
       status: `error`,
+    });
+  }
+};
+
+const createUserHandler = async (req, res) => {
+  try {
+    const user = await createUser(req.body);
+    return res.send({
+      success: true,
+      user,
+    });
+  } catch (err) {
+    res.send(409).send({
+      success: false,
+      message: err.message,
     });
   }
 };
@@ -80,8 +94,58 @@ const changePasswordHandler = async (req, res) => {
   }
 };
 
+const terminateSessionHandler = async (req, res) => {
+  try {
+    const terminated = await terminateSession(req.params.id);
+    return res.send({
+      terminated,
+      success: true,
+    });
+  } catch (err) {
+    res.send(409).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const terminateAllSessionHandler = async (req, res) => {
+  try {
+    const terminated = await terminateAll();
+    return res.send({
+      terminated,
+      success: true,
+    });
+  } catch (err) {
+    res.send(409).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const getUsersHandler = async (req, res) => {
+  try {
+    const {platform} = req.params;
+    const users = await fetchUsers(platform);
+    return res.send({
+      users,
+      success: true,
+    });
+  } catch (err) {
+    res.send(409).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 module.exports = (app)=>{
   app.post(`/login`, createSessionHandler);
+  app.post(`/users`, createUserHandler);
   app.post(`/forgot`, resetPasswordHandler);
   app.post(`/password`, changePasswordHandler);
+  app.delete(`/sessions/:id`, requireAdmin, terminateSessionHandler);
+  app.delete(`/sessions`, requireAdmin, terminateAllSessionHandler);
+  app.get(`/users/:platform`, requireAdmin, getUsersHandler);
 };

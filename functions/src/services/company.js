@@ -21,7 +21,11 @@ const getCompanies = async (user) => {
       created: new Date(single[header.indexOf("Timestamp Signed")]),
       mining: single[header.indexOf("Mining")] === `TRUE`,
     });
-    if (company.mining) {
+    if (user.type === "buyer" || user.type === "investor") {
+      if (company.mining) {
+        companies.push(company);
+      }
+    } else {
       companies.push(company);
     }
   });

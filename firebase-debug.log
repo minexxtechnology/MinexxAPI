@@ -1,0 +1,68 @@
+[debug] [2024-05-14T19:09:59.354Z] ----------------------------------------------------------------------
+[debug] [2024-05-14T19:09:59.357Z] Command:       /usr/local/bin/node /usr/local/bin/firebase init
+[debug] [2024-05-14T19:09:59.358Z] CLI Version:   13.5.2
+[debug] [2024-05-14T19:09:59.358Z] Platform:      darwin
+[debug] [2024-05-14T19:09:59.358Z] Node Version:  v21.6.2
+[debug] [2024-05-14T19:09:59.359Z] Time:          Tue May 14 2024 21:09:59 GMT+0200 (Central Africa Time)
+[debug] [2024-05-14T19:09:59.359Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-05-14T19:09:59.420Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-05-14T19:09:59.420Z] > authorizing via signed-in user (minexx.dev@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/skidonok/MinexxAPI
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2024-05-14T19:10:02.207Z] Using project from CLI flag: minexx-dashboard
+[debug] [2024-05-14T19:10:02.209Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/minexx-dashboard [none]
+[debug] [2024-05-14T19:10:07.300Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/minexx-dashboard 200
+[debug] [2024-05-14T19:10:07.300Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/minexx-dashboard {"projectId":"minexx-dashboard","projectNumber":"426415920655","displayName":"Minexx Dashboard","name":"projects/minexx-dashboard","resources":{"hostingSite":"minexx-dashboard","storageBucket":"minexx-dashboard.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_d9e254bb-6175-4794-b4f6-44844836a1cf"}
+[info] i  Using project minexx-dashboard (Minexx Dashboard) 
+[info] 
+=== Functions Setup
+[debug] [2024-05-14T19:10:07.327Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-05-14T19:10:07.327Z] > authorizing via signed-in user (minexx.dev@gmail.com)
+[debug] [2024-05-14T19:10:07.328Z] [iam] checking project minexx-dashboard for permissions ["firebase.projects.get"]
+[debug] [2024-05-14T19:10:07.328Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/minexx-dashboard:testIamPermissions [none]
+[debug] [2024-05-14T19:10:07.328Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/minexx-dashboard:testIamPermissions x-goog-quota-user=projects/minexx-dashboard
+[debug] [2024-05-14T19:10:07.328Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/minexx-dashboard:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2024-05-14T19:10:20.248Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/minexx-dashboard:testIamPermissions 200
+[debug] [2024-05-14T19:10:20.248Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/minexx-dashboard:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2024-05-14T19:10:20.249Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/minexx-dashboard/services/cloudfunctions.googleapis.com [none]
+[debug] [2024-05-14T19:10:20.249Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/minexx-dashboard/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/minexx-dashboard
+[debug] [2024-05-14T19:10:20.250Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/minexx-dashboard/services/runtimeconfig.googleapis.com [none]
+[debug] [2024-05-14T19:10:20.250Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/minexx-dashboard/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/minexx-dashboard
+[debug] [2024-05-14T19:10:35.559Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/minexx-dashboard/services/cloudfunctions.googleapis.com 200
+[debug] [2024-05-14T19:10:35.559Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/minexx-dashboard/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2024-05-14T19:10:35.620Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/minexx-dashboard/services/runtimeconfig.googleapis.com 200
+[debug] [2024-05-14T19:10:35.620Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/minexx-dashboard/services/runtimeconfig.googleapis.com [omitted]
+[info] 
+Detected existing codebase(s): default
+
+[info] Let's create a new codebase for your functions.
+[info] A directory corresponding to the codebase will be created in your project
+[info] with sample code pre-configured.
+
+[info] See https://firebase.google.com/docs/functions/organize-functions for
+[info] more information on organizing your functions using codebases.
+
+[info] Functions can be deployed with firebase deploy.
+
+[error] Invalid codebase name. Codebase must be less than 64 characters and can contain only lowercase letters, numeric characters, underscores, and dashes.

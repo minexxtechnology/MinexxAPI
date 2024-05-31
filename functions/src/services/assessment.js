@@ -1,8 +1,12 @@
 const {sheets, spreadsheets} = require("../utils/connect");
 const {getFile} = require("./file");
 
-const getAssessments = async (user) => {
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.assessment, range: "Assessment Form!A:ZZ"});
+/**
+ * @param {User} user - The making request to fetch assessments
+ * @param {String} platform - The platform to fetch from
+ */
+const getAssessments = async (user, platform) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].assessment, range: "Assessment Form!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Mine/Concession Name")]);
 
@@ -35,9 +39,10 @@ const getAssessments = async (user) => {
  *
  * @param {String} id - Unique identifier for assessment being fetched
  * @param {String} user - User object of the user making the request
+ * @param {String} platform - The platform to fetch from
  */
-const getMineAssessments = async (id, user) => {
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.assessment, range: "Assessment Form!A:ZZ"});
+const getMineAssessments = async (id, user, platform) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].assessment, range: "Assessment Form!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Mine/Concession Name")] && item[header.indexOf("Mine/Concession Name")] === id );
 
@@ -74,9 +79,10 @@ const getMineAssessments = async (id, user) => {
 /**
  *
  * @param {String} id - Unique identifier for company whose assessments are being fetched
+ * @param {String} platform - The platform to fetch from
  */
-const getCompanyAssessments = async (id) => {
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.assessment, range: "Assessment Form!A:ZZ"});
+const getCompanyAssessments = async (id, platform) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].assessment, range: "Assessment Form!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Mine/Concession Name")]);
 

@@ -1,10 +1,12 @@
 const {requireUser} = require("../middleware/requireUser");
 const {getCompanies, getCompany, getCompanyShareholders, getCompanyBeneficialOwners, getCompanyDocuments} = require("../services/company");
+const {get} = require("lodash");
 
 const getCompaniesHandler = async (req, res) => {
   try {
     const {user} = res.locals;
-    const companies = await getCompanies(user);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const companies = await getCompanies(user, platform);
 
     res.send({
       success: true,
@@ -21,7 +23,8 @@ const getCompaniesHandler = async (req, res) => {
 const getCompanyHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const company = await getCompany(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const company = await getCompany(id, platform);
 
     res.send({
       success: true,
@@ -38,7 +41,8 @@ const getCompanyHandler = async (req, res) => {
 const getCompanyBenficialOwnersHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const beneficialOwners = await getCompanyBeneficialOwners(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const beneficialOwners = await getCompanyBeneficialOwners(id, platform);
 
     res.send({
       success: true,
@@ -55,7 +59,8 @@ const getCompanyBenficialOwnersHandler = async (req, res) => {
 const getCompanyShareholdersHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const shareholders = await getCompanyShareholders(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const shareholders = await getCompanyShareholders(id, platform);
 
     res.send({
       success: true,
@@ -72,7 +77,8 @@ const getCompanyShareholdersHandler = async (req, res) => {
 const getCompanyDocumentsHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const documents = await getCompanyDocuments(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const documents = await getCompanyDocuments(id, platform);
 
     res.send({
       success: true,

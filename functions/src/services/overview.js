@@ -3,8 +3,13 @@ const {getExports} = require("./export");
 const {getIncidents} = require("./incident");
 const moment = require("moment");
 
-const assessmentsOverview = async (user)=>{
-  let response = (await getAssessments(user));
+/**
+ *
+ * @param {User} user - The user making the request to fetch assessment overview information
+ * @param {String} platform - The platform to fetch from
+ */
+const assessmentsOverview = async (user, platform)=>{
+  let response = (await getAssessments(user, platform));
   const header = response.header;
   response = response.assessments;
 
@@ -32,8 +37,13 @@ const assessmentsOverview = async (user)=>{
   return {assessments, count};
 };
 
-const exportsOverview = async (user)=> {
-  const response = (await getExports(user));
+/**
+ *
+ * @param {User} user - The user making the request to fetch the exports overview information
+ * @param {String} platform - The platform to fetch from
+ */
+const exportsOverview = async (user, platform)=> {
+  const response = (await getExports(user, platform));
 
   const exports = [0, 0, 0, 0, 0, 0];
   let count = 0;
@@ -60,8 +70,13 @@ const exportsOverview = async (user)=> {
   return {exports, volume, count};
 };
 
-const incidentsOverview = async (user)=> {
-  const response = (await getIncidents(user));
+/**
+ *
+ * @param {User} user - The user making the request to fetch incidents overview information
+ * @param {String} platform - The platform to fetch from
+ */
+const incidentsOverview = async (user, platform)=> {
+  const response = (await getIncidents(user, platform));
 
   const incidents = [0, 0, 0, 0, 0, 0];
   let count = 0;
@@ -87,8 +102,13 @@ const incidentsOverview = async (user)=> {
   return {incidents, count};
 };
 
-const incidentRisks = async (user)=> {
-  const incidents = (await getIncidents(user));
+/**
+ *
+ * @param {User} user - The user making the request to fetch incident risks information
+ * @param {String} platform - The platform to fetch from
+ */
+const incidentRisks = async (user, platform)=> {
+  const incidents = (await getIncidents(user, platform));
   const risks = [0, 0, 0, 0, 0, 0, 0];
   incidents.map((single)=>{
     if (single.riskCategory.toLowerCase().includes("legitimacy")) {

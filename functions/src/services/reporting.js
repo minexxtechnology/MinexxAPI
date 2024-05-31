@@ -5,7 +5,7 @@ const {getFile} = require("./file");
 
 const getPurchases = async () => {
   const date = moment().subtract(1, "day").toDate();
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.purchase_tracker, range: "Purchase Tracker!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].purchase_tracker, range: "Purchase Tracker!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")]);
   const purchases = [];
@@ -28,17 +28,17 @@ const getAdminDaily = async (selection) => {
   let date = "Production Date";
   let results;
   if (selection == "production") {
-    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.production, range: "Production!A:ZZ"});
+    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].production, range: "Production!A:ZZ"});
     field = "Production Weight (Kg)";
     date = "Production Date";
   }
   if (selection == "blending") {
-    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.blending, range: "Blending!A:ZZ"});
+    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].blending, range: "Blending!A:ZZ"});
     field = "Total Output Weight(kg)";
     date = "Blending Date";
   }
   if (selection == "processing") {
-    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.processing, range: "Processing!A:ZZ"});
+    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].processing, range: "Processing!A:ZZ"});
     field = "Processing Weight (kg)";
     date = "Date";
   }
@@ -49,7 +49,7 @@ const getAdminDaily = async (selection) => {
   for await (const row of rows) {
     for (const day of dates) {
       if (fns.isSameDay(day, moment(row[header.indexOf(date)]).toDate())) {
-        report[day.toUTCString().substring(0, 3)] += (Number(row[header.indexOf(field)])/1000).toFixed(1);
+        report[day.toUTCString().substring(0, 3)] += Number(row[header.indexOf(field)])/1000;
       }
     }
   }
@@ -59,9 +59,9 @@ const getAdminDaily = async (selection) => {
 
 const getDailyReport = async (user) => {
   const date = new Date();
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.purchase_tracker, range: "Purchase Tracker!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].purchase_tracker, range: "Purchase Tracker!A:ZZ"});
   const header = results.data.values[0];
-  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Payment Date")] && item[header.indexOf("Lot Status")] == "Paid");
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Payment Date")] && (item[header.indexOf("Lot Status")] == "Paid" || item[header.indexOf("Lot Status")] == "Blended"));
   const cassiterite = {
     dailyTarget: 4760,
     dailyActual: 0,
@@ -106,7 +106,7 @@ const getDailyReport = async (user) => {
 };
 
 const getBalanceReport = async (user) => {
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.purchase_tracker, range: "Purchase Tracker!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].purchase_tracker, range: "Purchase Tracker!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")]);
   const cassiterite = {
@@ -114,6 +114,7 @@ const getBalanceReport = async (user) => {
     supplier: 0,
     buyer: 0,
     shipped: 0,
+    pending: 0,
     rmr: 0,
   };
   const coltan = {
@@ -121,6 +122,7 @@ const getBalanceReport = async (user) => {
     supplier: 0,
     buyer: 0,
     shipped: 0,
+    pending: 0,
     rmr: 0,
   };
   const wolframite = {
@@ -128,6 +130,7 @@ const getBalanceReport = async (user) => {
     supplier: 0,
     buyer: 0,
     shipped: 0,
+    pending: 0,
     rmr: 0,
   };
   for await (const row of rows) {
@@ -142,6 +145,8 @@ const getBalanceReport = async (user) => {
         cassiterite.supplier += Number(row[header.indexOf("Processing Weight (kg)")]);
       } else if (String(row[header.indexOf("New Location storage")]).trim().toLowerCase() === `rmr container`) {
         cassiterite.rmr += Number(row[header.indexOf("Processing Weight (kg)")]);
+      } else if (String(row[header.indexOf("New Location storage")]).trim().toLowerCase() === `pending shipment`) {
+        cassiterite.pending += Number(row[header.indexOf("Processing Weight (kg)")]);
       }
     } else if (row[header.indexOf("Type of Minerals")] === `Coltan`) {
       if (String(row[header.indexOf("New Location storage")]).trim().toLowerCase() === `minexx container`) {
@@ -154,6 +159,8 @@ const getBalanceReport = async (user) => {
         coltan.supplier += Number(row[header.indexOf("Processing Weight (kg)")]);
       } else if (String(row[header.indexOf("New Location storage")]).trim().toLowerCase() === `rmr container`) {
         coltan.rmr += Number(row[header.indexOf("Processing Weight (kg)")]);
+      } else if (String(row[header.indexOf("New Location storage")]).trim().toLowerCase() === `pending shipment`) {
+        coltan.pending += Number(row[header.indexOf("Processing Weight (kg)")]);
       }
     } else if (row[header.indexOf("Type of Minerals")] === `Wolframite`) {
       if (String(row[header.indexOf("New Location storage")]).trim().toLowerCase() === `minexx container`) {
@@ -166,6 +173,8 @@ const getBalanceReport = async (user) => {
         wolframite.supplier += Number(row[header.indexOf("Processing Weight (kg)")]);
       } else if (String(row[header.indexOf("New Location storage")]).trim().toLowerCase() === `rmr container`) {
         wolframite.rmr += Number(row[header.indexOf("Processing Weight (kg)")]);
+      } else if (String(row[header.indexOf("New Location storage")]).trim().toLowerCase() === `pending shipment`) {
+        wolframite.pending += Number(row[header.indexOf("Processing Weight (kg)")]);
       }
     }
   }
@@ -175,7 +184,7 @@ const getBalanceReport = async (user) => {
 
 const getPurchaseReport = async (user) => {
   const date = new Date();
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.purchase_tracker, range: "Purchase Tracker!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].purchase_tracker, range: "Purchase Tracker!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")]);
   const cassiterite = {
@@ -247,12 +256,17 @@ const getSystemLogs = async () => {
 
 const getTraceProduction = async (id) => {
   const production = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.production, range: "Production!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].production, range: "Production!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Company Name")] === id);
 
   for await (const row of rows.reverse()) {
-    const image = await getFile(row[header.indexOf(`Picture`)].split(`/`)[1]);
+    let image;
+    try {
+      if (id !== "ce62eb6j") {
+        image = await getFile(row[header.indexOf(`Picture`)].split(`/`)[1]);
+      }
+    } catch (err) {/* empty */}
     const prod = {
       weight: row[header.indexOf(`Production Weight (Kg)`)],
       location: row[header.indexOf(`Business Location`)],
@@ -272,7 +286,7 @@ const getTraceProduction = async (id) => {
 
 const getTraceBagsProduced = async (id) => {
   const bags = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.bags, range: "Bags!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].bags, range: "Bags!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Company Name")] === id);
 
@@ -300,14 +314,24 @@ const getTraceBagsProduced = async (id) => {
   return bags;
 };
 
-const getTraceProcessing = async (id) => {
+/**
+ *
+ * @param {String} id - The unique identifier for the comppany
+ * @param {String} platform - The platform to fetch from
+ */
+const getTraceProcessing = async (id, platform) => {
   const processing = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.processing, range: "Processing!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].processing, range: "Processing!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Company Name")] === id);
 
   for await (const row of rows.reverse()) {
-    const image = row[header.indexOf(`Picture`)] ? await getFile(row[header.indexOf(`Picture`)].split(`/`)[1]) : null;
+    let image;
+    try {
+      if (id !== "ce62eb6j") {
+        image = row[header.indexOf(`Picture`)] ? await getFile(row[header.indexOf(`Picture`)].split(`/`)[1]) : null;
+      }
+    } catch (err) {/* empty */}
     const proc = {
       id: row[header.indexOf(`ID`)],
       date: row[header.indexOf(`Date`)],
@@ -348,7 +372,7 @@ const getTraceProcessing = async (id) => {
 
 const getTraceBagsProcessed = async (id) => {
   const bagsProc= [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.proc_bags, range: "Proc Bags!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].proc_bags, range: "Proc Bags!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Company Name")] === id);
 
@@ -378,7 +402,7 @@ const getTraceBagsProcessed = async (id) => {
 
 const getTraceDrums = async (id) => {
   const drums= [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.drum, range: "Drum!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].drum, range: "Drum!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Drum Number")] && item[header.indexOf("Company Name")] === id);
 

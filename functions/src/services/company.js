@@ -4,9 +4,14 @@ const Shareholder = require("../model/shareholder");
 const {sheets, spreadsheets} = require("../utils/connect");
 const {getFile} = require("./file");
 
-const getCompanies = async (user) => {
+/**
+ *
+ * @param {User} user - The user making the request for fetch companies information
+ * @param {String} platform - The platform to fetch from
+ */
+const getCompanies = async (user, platform) => {
   let companies = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.company, range: "Company!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].company, range: "Company!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")]);
 
@@ -40,9 +45,10 @@ const getCompanies = async (user) => {
 /**
  *
  * @param {String} id - Unique identifier for company being fetched
+ * @param {String} platform - The platform to fetch from
  */
-const getCompany = async (id) => {
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.company, range: "Company!A:ZZ"});
+const getCompany = async (id, platform) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].company, range: "Company!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Unique ID")] === id );
 
@@ -69,11 +75,12 @@ const getCompany = async (id) => {
 /**
  *
  * @param {String} id - Unique identifier for company beneficial owners being fetched
+ * @param {String} platform - The platform to fetch from
  */
-const getCompanyBeneficialOwners = async (id) => {
+const getCompanyBeneficialOwners = async (id, platform) => {
   const owners = [];
 
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.owners, range: "Beneficial Owners!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].owners, range: "Beneficial Owners!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Company")] === id);
 
@@ -96,10 +103,11 @@ const getCompanyBeneficialOwners = async (id) => {
 /**
  *
  * @param {String} id - Unique identifier for company shareholders being fetched
+ * @param {String} platform - The platform to fetch from
  */
-const getCompanyShareholders = async (id) => {
+const getCompanyShareholders = async (id, platform) => {
   const shareholders = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.shareholders, range: "Shareholders!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].shareholders, range: "Shareholders!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Company")] === id);
 
@@ -126,11 +134,12 @@ const getCompanyShareholders = async (id) => {
 /**
  *
  * @param {String} id - Unique identifier for company shareholders being fetched
+ * @param {String} platform - The platform to fetch from
  */
-const getCompanyDocuments = async (id) => {
+const getCompanyDocuments = async (id, platform) => {
   const documents = [];
 
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.company_documents, range: "Company Documents!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].company_documents, range: "Company Documents!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Company")] === id);
 

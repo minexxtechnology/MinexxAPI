@@ -1,12 +1,13 @@
 const {onRequest} = require("firebase-functions/v2/https");
+const functions = require("firebase-functions");
 const bodyparser = require("body-parser");
 const express = require("express");
 const cors = require("cors");
 const moment = require("moment");
 const nodemailer = require("nodemailer");
-const cron = require("node-cron");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
+const tmp = require("tmp");
 const app = express();
 const {deserializeUser} = require("./src/middleware/deserializeUser");
 
@@ -20,8 +21,10 @@ const overview = require("./src/controller/overview.js");
 const mines = require("./src/controller/mine.js");
 const users = require("./src/controller/user.js");
 const reporting = require("./src/controller/reporting.js");
+const integrations = require("./src/controller/integrations.js");
 const {getDailyReport, getBalanceReport} = require("./src/services/reporting.js");
 const {startOfMonth, isBefore, isWeekend} = require("date-fns");
+const {success, error} = require("./src/utils/logger.js");
 
 // setup express
 app.use(cors({
@@ -45,6 +48,7 @@ overview(app);
 mines(app);
 users(app);
 reporting(app);
+integrations(app);
 
 const emailReports = async () => {
   let days = 0;
@@ -62,9 +66,10 @@ const emailReports = async () => {
   // const doc2 = new PDFDocument();
 
   // See below for browser usage
-  doc.pipe(fs.createWriteStream(`Total Stock Delivery (${new Date().toISOString().substring(0, 10)}).pdf`));
+  doc.pipe(fs.createWriteStream(`${tmp.tmpdir}/Total Stock Delivery (${new Date().toISOString().substring(0, 10)}).pdf`));
 
   // Embed a font, set the font size, and render some text
+  doc.font("./poppins.ttf");
   doc.fontSize(20).text(`Total Stock Delivery - ${new Date().toISOString().substring(0, 10)}`);
   doc.fontSize(14).text(`\n\nCASSITERITE`);
   doc.fontSize(11);
@@ -100,13 +105,15 @@ MTD Actuals vs Target (%):    ${(((report.wolframite.mtdActual/1000)/((report.wo
   // Finalize PDF file
   doc.end();
 
-  doc1.pipe(fs.createWriteStream(`In-Stock Country Balance (${new Date().toISOString().substring(0, 10)}).pdf`));
+  doc1.pipe(fs.createWriteStream(`${tmp.tmpdir}/In-Stock Country Balance (${new Date().toISOString().substring(0, 10)}).pdf`));
+  doc1.font("./poppins.ttf");
   doc1.fontSize(20).text(`In-Stock Country Balance - ${new Date().toISOString().substring(0, 10)}`);
   doc1.fontSize(14).text(`\n\nCASSITERITE`);
   doc1.fontSize(11);
   doc1.text(`With Minexx (TONS):    ${(balance.cassiterite.minexx/1000).toFixed(2)}
 With RMR (TONS)    ${(balance.cassiterite.rmr/1000).toFixed(2)}
 With Buyer (SOLD)    ${(balance.cassiterite.buyer/1000).toFixed(2)}
+Pending Shipment (TONS)    ${(balance.cassiterite.pending/1000).toFixed(2)}
 Shipped (TONS)    ${(balance.cassiterite.shipped/1000).toFixed(2)}`, {
     align: "left",
   });
@@ -115,6 +122,7 @@ Shipped (TONS)    ${(balance.cassiterite.shipped/1000).toFixed(2)}`, {
   doc1.text(`With Minexx (TONS):    ${(balance.coltan.minexx/1000).toFixed(2)}
 With RMR (TONS)    ${(balance.coltan.rmr/1000).toFixed(2)}
 With Buyer (SOLD)    ${(balance.coltan.buyer/1000).toFixed(2)}
+Pending Shipment (TONS)    ${(balance.coltan.pending/1000).toFixed(2)}
 Shipped (TONS)    ${(balance.coltan.shipped/1000).toFixed(2)}`, {
     align: "left",
   });
@@ -123,6 +131,7 @@ Shipped (TONS)    ${(balance.coltan.shipped/1000).toFixed(2)}`, {
   doc1.text(`With Minexx (TONS):    ${(balance.wolframite.minexx/1000).toFixed(2)}
 With RMR (TONS)    ${(balance.wolframite.rmr/1000).toFixed(2)}
 With Buyer (SOLD)    ${(balance.wolframite.buyer/1000).toFixed(2)}
+Pending Shipment (TONS)    ${(balance.wolframite.pending/1000).toFixed(2)}
 Shipped (TONS)    ${(balance.wolframite.shipped/1000).toFixed(2)}`, {
     align: "left",
   });
@@ -144,13 +153,11 @@ Shipped (TONS)    ${(balance.wolframite.shipped/1000).toFixed(2)}`, {
     });
 
     // send mail with defined transport object
-
-    // bcc: "bedakaffou@yahoo.fR,dabe.consult@gmail.com,admin@bedaconsult.com,Bedakaffou@bedaconsult.com",
     await transporter.sendMail({
       from: "\"Minexx\" <minexx.dev@gmail.com>", // sender address
+      subject: "Reports Attached | Minexx", // Subject line
       to: "b.akaffou@minexx.co", // sender address
       bcc: "o.devreese@minexx.co,mansoor@minexx.co,n.muhizi@minexx.co,laurent@minexx.co,marcus@minexx.co,e.beau@minexx.co,t.qureshi@minexx.co,habimanar@minexx.co",
-      subject: "Reports Attached | Minexx", // Subject line
       text: "Please find attached the subject mentioned.\n\nRegards,\n\nMinexx",
       html: `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -619,16 +626,16 @@ Shipped (TONS)    ${(balance.wolframite.shipped/1000).toFixed(2)}`, {
       </html>`,
       attachments: [
         {
-          path: `Total Stock Delivery (${new Date().toISOString().substring(0, 10)}).pdf`,
+          path: `${tmp.tmpdir}/Total Stock Delivery (${new Date().toISOString().substring(0, 10)}).pdf`,
         },
         {
-          path: `In-Stock Country Balance (${new Date().toISOString().substring(0, 10)}).pdf`,
+          path: `${tmp.tmpdir}/In-Stock Country Balance (${new Date().toISOString().substring(0, 10)}).pdf`,
         },
       ],
     });
-    console.log(`Cron job executed successfully at ${new Date().toLocaleString()}`);
+    success(null, `Cron job executed successfully at ${new Date().toLocaleString()}`, null, null);
   } catch (err) {
-    console.log(`Cron job failed to execute at ${new Date().toLocaleString()}. Reason: ${err.message}`);
+    error(null, `Cron job failed to execute at ${new Date().toLocaleString()}. Reason: ${err.message}`, null, null);
   }
 };
 
@@ -644,12 +651,10 @@ app.get("/", async (req, res)=>{
   });
 });
 
-cron.schedule("0 55 23 * * *", () => {
-  console.log("Running scheduled cron job");
+exports.scheduledCronJobs = functions.pubsub.schedule("0 17 * * MON-FRI").timeZone("Africa/Johannesburg").onRun((context)=>{
+  success(null, `Running scheduled cron job at: ${context.timestamp}`, null, null);
   emailReports();
-}, {
-  runOnInit: false,
-  timezone: "Africa/Gaborone",
+  return null;
 });
 
 exports.minexx = onRequest(app);

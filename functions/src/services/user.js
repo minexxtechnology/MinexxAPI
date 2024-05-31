@@ -5,6 +5,7 @@ const User = require("../model/user");
 const {omit} = require("lodash");
 const config = require("../config/default");
 const {sendPasswordResetEmail, getAuth} = require("firebase/auth");
+const {sendWelcomeEmail} = require("../utils/mail");
 
 const createUser = async (input) => {
   try {
@@ -16,7 +17,7 @@ const createUser = async (input) => {
       password: user.password,
       photoURL: user.photoURL,
     });
-    // await sendVerifyEmail(input.email, account.uid);
+    sendWelcomeEmail(input.email, user.password);
     await firebase.firestore().collection(`users`).doc(account.uid).set( omit(user, `password`, `uid`) );
     return account;
   } catch (e) {
@@ -56,7 +57,7 @@ const findUser = async (id) => {
   }
 };
 
-const fetchUsers = async (platform) => {
+const fetchUsers = async (platform, dashboard) => {
   try {
     const users = [];
 
@@ -72,7 +73,7 @@ const fetchUsers = async (platform) => {
         users.push(user);
       });
     } else {
-      const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.users, range: "Users!A:ZZ"});
+      const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[dashboard].users, range: "Users!A:ZZ"});
       const header = results.data.values[0];
       const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("User ID")]);
 
@@ -131,8 +132,61 @@ const validatePassword = async ({email, password})=>{
   }
 };
 
+const deleteUser = async (uid)=>{
+  try {
+    await firebase.auth().deleteUser(uid);
+    await firebase.firestore().collection(`users`).doc(uid).update({
+      updated: new Date(),
+      status: "deleted",
+    });
+    return true;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
+
+const updateUserStatus = async (uid)=>{
+  try {
+    const user = await firebase.firestore().collection(`users`).doc(uid).get();
+    await firebase.auth().updateUser(uid, {
+      disabled: user.data().status !== "suspended",
+    });
+    await firebase.firestore().collection(`users`).doc(uid).update({
+      updated: new Date(),
+      status: user.data().status === "suspended"? "active" : "suspended",
+    });
+    return true;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
+
+const updateUser = async (uid, name, surname, email)=>{
+  try {
+    const user = await firebase.firestore().collection(`users`).doc(uid).get();
+    if (user.data().email !== email) {
+      await firebase.auth().updateUser(uid, {
+        displayName: `${name} ${surname}`,
+        email,
+      });
+    }
+    await firebase.firestore().collection(`users`).doc(uid).update({
+      updated: new Date(),
+      name,
+      surname,
+      email,
+    });
+    return true;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
+
 module.exports = {
   findUser,
+  deleteUser,
+  updateUser,
+  updateUserStatus,
   fetchUsers,
   createUser,
   changePassword,

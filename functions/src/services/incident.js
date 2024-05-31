@@ -2,9 +2,14 @@ const Incident = require("../model/incident");
 const {sheets, spreadsheets} = require("../utils/connect");
 const {getFile} = require("./file");
 
-const getIncidents = async (user) => {
+/**
+ *
+ * @param {User} user - The user making the request to fetch the incidents
+ * @param {String} platform - The platform to fetch from
+ */
+const getIncidents = async (user, platform) => {
   const incidents = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.incident, range: "Incident Form!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].incident, range: "Incident Form!A:ZZ"});
 
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Incident number/ID")]);
@@ -42,9 +47,10 @@ const getIncidents = async (user) => {
 {/**
  *
  * @param {String} id - Unique identifier for incident being fetched
+ * @param {String} platform - The platform to fetch from
 */}
-const getIncident = async (id) => {
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.incident, range: "Incident Form!A2:ZZ"});
+const getIncident = async (id, platform) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].incident, range: "Incident Form!A2:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0);
 
@@ -78,11 +84,11 @@ const getIncident = async (id) => {
 {/**
  *
  * @param {String} id - Uniquie identifier of mine whose incidents are being fetched
- * @returns
+ * @param {String} platform - The platform to fetch from
 */}
-const getMineIncidents = async (id) => {
+const getMineIncidents = async (id, platform) => {
   const incidents = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.incident, range: "Incident Form!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].incident, range: "Incident Form!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Incident number/ID")] && item[header.indexOf("Incident Location ")] === id);
 
@@ -115,11 +121,11 @@ const getMineIncidents = async (id) => {
 {/**
  *
  * @param {String} id - Uniquie identifier of company whose incidents are being fetched
- * @returns
+ * @param {String} platform - The platform to fetch from
 */}
-const getCompanyIncidents = async (id) => {
+const getCompanyIncidents = async (id, platform) => {
   const incidents = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.incident, range: "Incident Form!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].incident, range: "Incident Form!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Incident number/ID")]);
 

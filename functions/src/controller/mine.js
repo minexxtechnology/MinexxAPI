@@ -1,10 +1,12 @@
 const {getMines, getMine, getMineImages, getMineVideos} = require("../services/mine");
 const {requireUser} = require("../middleware/requireUser");
+const {get} = require("lodash");
 
 const getMinesHandler = async (req, res) => {
   try {
-    const {user} = res.locals;
-    const mines = await getMines(user);
+    // const {user} = res.locals;
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const mines = await getMines(platform);
 
     res.send({
       success: true,
@@ -21,7 +23,8 @@ const getMinesHandler = async (req, res) => {
 const getCompanyMinesHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    let mines = await getMines();
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    let mines = await getMines(platform);
     mines = mines.filter((mine)=>mine.company === id);
 
     res.send({
@@ -39,7 +42,8 @@ const getCompanyMinesHandler = async (req, res) => {
 const getMineHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const mine = await getMine(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const mine = await getMine(id, platform);
 
     res.send({
       success: true,
@@ -57,7 +61,8 @@ const getMineImagesHandler = async (req, res) => {
   try {
     const {id} = req.params;
 
-    const images = await getMineImages(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const images = await getMineImages(id, platform);
 
     res.send({
       success: true,
@@ -75,7 +80,8 @@ const getMineVideosHandler = async (req, res) => {
   try {
     const {id} = req.params;
 
-    const videos = await getMineVideos(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const videos = await getMineVideos(id, platform);
 
     res.send({
       success: true,

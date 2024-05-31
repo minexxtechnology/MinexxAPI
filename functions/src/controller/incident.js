@@ -1,9 +1,11 @@
 const {getIncidents, getIncident, getCompanyIncidents, getMineIncidents} = require("../services/incident");
+const {get} = require("lodash");
 
 const getIncidentsHandler = async (req, res) => {
   try {
     const {user} = res.locals;
-    const incidents = await getIncidents(user);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const incidents = await getIncidents(user, platform);
 
     res.send({
       success: true,
@@ -20,7 +22,8 @@ const getIncidentsHandler = async (req, res) => {
 const getCompanyIncidentsHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const incidents = await getCompanyIncidents(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const incidents = await getCompanyIncidents(id, platform);
 
     res.send({
       success: true,
@@ -37,7 +40,8 @@ const getCompanyIncidentsHandler = async (req, res) => {
 const getMineIncidentsHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const incidents = await getMineIncidents(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const incidents = await getMineIncidents(id, platform);
 
     res.send({
       success: true,
@@ -54,7 +58,8 @@ const getMineIncidentsHandler = async (req, res) => {
 const getIncidentHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const incident = await getIncident(id);
+    const platform = get(req, `headers.x-platform`) || "3ts";
+    const incident = await getIncident(id, platform);
 
     res.send({
       success: true,

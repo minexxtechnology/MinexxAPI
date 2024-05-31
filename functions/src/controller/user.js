@@ -1,9 +1,10 @@
-const {requestResetPassword, changePassword, validatePassword, fetchUsers, createUser} = require("../services/user");
+const {requestResetPassword, changePassword, validatePassword, fetchUsers, createUser, deleteUser, updateUserStatus, updateUser} = require("../services/user");
 const Session = require("../model/session");
 const {createSession, terminateSession, terminateAll} = require("../services/session");
 const {signJwt} = require("../utils/jwt");
 const config = require("../config/default");
 const {requireAdmin} = require("../middleware/requireAdmin");
+const {get} = require("lodash");
 
 const createSessionHandler = async (req, res) => {
   try {
@@ -53,6 +54,22 @@ const createUserHandler = async (req, res) => {
     return res.send({
       success: true,
       user,
+    });
+  } catch (err) {
+    res.send(409).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const deleteUserHandler = async (req, res) => {
+  try {
+    const {uid} = req.params;
+    const deleted = await deleteUser(uid);
+    return res.send({
+      success: true,
+      deleted,
     });
   } catch (err) {
     res.send(409).send({
@@ -127,7 +144,8 @@ const terminateAllSessionHandler = async (req, res) => {
 const getUsersHandler = async (req, res) => {
   try {
     const {platform} = req.params;
-    const users = await fetchUsers(platform);
+    const dashboard = get(req, `headers.x-platform`) || "3ts";
+    const users = await fetchUsers(platform, dashboard);
     return res.send({
       users,
       success: true,
@@ -140,12 +158,48 @@ const getUsersHandler = async (req, res) => {
   }
 };
 
+const updateUserStatusHandler = async (req, res) => {
+  try {
+    const {uid} = req.params;
+    const updated = await updateUserStatus(uid);
+    return res.send({
+      updated,
+      success: true,
+    });
+  } catch (err) {
+    res.send(409).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const updateUserHandler = async (req, res) => {
+  try {
+    const {uid} = req.params;
+    const {name, surname, email} = req.body;
+    const updated = await updateUser(uid, name, surname, email);
+    return res.send({
+      updated,
+      success: true,
+    });
+  } catch (err) {
+    res.send(409).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 module.exports = (app)=>{
   app.post(`/login`, createSessionHandler);
-  app.post(`/users`, createUserHandler);
+  app.post(`/users`, requireAdmin, createUserHandler);
+  app.delete(`/users/:uid`, requireAdmin, deleteUserHandler);
+  app.put(`/users/:uid`, requireAdmin, updateUserHandler);
+  app.put(`/users/status/:uid`, requireAdmin, updateUserStatusHandler);
   app.post(`/forgot`, resetPasswordHandler);
   app.post(`/password`, changePasswordHandler);
   app.delete(`/sessions/:id`, requireAdmin, terminateSessionHandler);
   app.delete(`/sessions`, requireAdmin, terminateAllSessionHandler);
-  app.get(`/users/:platform`, requireAdmin, getUsersHandler);
+  app.get(`/users/:platform`, getUsersHandler);
 };

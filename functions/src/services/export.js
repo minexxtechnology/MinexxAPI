@@ -4,14 +4,14 @@ const logger = require("../utils/logger");
 const {getCompany} = require("./company");
 const {getFile} = require("./file");
 
-const getExports = async (user) => {
+const getExports = async (user, dashboard) => {
   if (user == null) {
     throw new Error("You're missing valid session credentials.");
   }
   const exports = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.export, range: "Export!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[dashboard].export, range: `${dashboard === "3ts" ? "Export" : "Gold"}!A:ZZ`});
   const header = results.data.values[0];
-  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Exportation ID")]);
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf(dashboard === "3ts" ? "Exportation ID" : "Transaction Unique ID")]);
 
   for await (const single of rows) {
     const export_ = new Export({
@@ -55,7 +55,7 @@ const getExports = async (user) => {
     });
 
     try {
-      export_.company = await getCompany(export_.company);
+      export_.company = await getCompany(export_.company, dashboard);
     } catch (err) {
       logger.warn("/exports", err.message, user.email, null);
     }
@@ -70,16 +70,14 @@ const getExports = async (user) => {
     }
   }
 
-  console.info("Exports After: ", exports.length);
-
   return exports.reverse();
 };
 
-const getCompanyExports = async (id) => {
+const getCompanyExports = async (id, dashboard) => {
   const exports = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.export, range: "Export!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[dashboard].export, range: `${dashboard === "3ts" ? "Export" : "Gold"}!A:ZZ`});
   const header = results.data.values[0];
-  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Exportation ID")] && item[header.indexOf("Company Name")] === id);
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf(dashboard === "3ts" ? "Exportation ID" : "Transaction Unique ID")] && item[header.indexOf(`${dashboard === "3ts" ? "Company Name" : "Company name"}`)] === id);
 
   for await (const single of rows) {
     const export_ = new Export({
@@ -122,7 +120,7 @@ const getCompanyExports = async (id) => {
       link: single[header.indexOf(`Track`)],
     });
     try {
-      export_.company = await getCompany(export_.company);
+      export_.company = await getCompany(export_.company, dashboard);
     } catch (err) {
       throw new Error(err.message);
     }
@@ -137,10 +135,10 @@ const getCompanyExports = async (id) => {
  * @param {Number} id - Index of the exportation details being fetched
  * @returns
 */}
-const getExport = async (id) => {
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.export, range: "Export!A:ZZ"});
+const getExport = async (id, dashboard) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[dashboard].export, range: `${dashboard === "3ts" ? "Export" : "Gold"}!A:ZZ`});
   const header = results.data.values[0];
-  const single = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Exportation ID")])[id];
+  const single = results.data.values.filter((item, i)=>i>0 && item[header.indexOf(dashboard === "3ts" ? "Exportation ID" : "Transaction Unique ID")])[id];
 
   const export_ = new Export({
     id,
@@ -195,7 +193,7 @@ const getExport = async (id) => {
   });
 
   try {
-    export_.company = await getCompany(export_.company);
+    export_.company = await getCompany(export_.company, dashboard);
   } catch (err) {/* empty */}
 
   try {

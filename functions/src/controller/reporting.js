@@ -9,7 +9,7 @@ const getPurchasesHandler = async (req, res) => {
   const {user} = res.locals;
   try {
     const {user} = res.locals;
-    const purchases = await getPurchases(user);
+    const purchases = await getPurchases();
     logger.success(req.originalUrl, "Request to specified endpoint was successful", user.email, req.header("x-forwarded-for") || req.socket.remoteAddress);
 
     res.send({

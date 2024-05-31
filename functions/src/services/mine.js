@@ -2,9 +2,13 @@ const Mine = require("../model/mine");
 const {sheets, spreadsheets} = require("../utils/connect");
 const {getFile, getVideos} = require("./file");
 
-const getMines = async () => {
+/**
+ *
+ * @param {String} platform - The platform to fetch from
+ */
+const getMines = async (platform) => {
   const mines = [];
-  const rows = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.mine, range: "Mine!A2:Z"});
+  const rows = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].mine, range: "Mine!A2:Z"});
 
   rows.data.values.map((single)=>{
     if (single[0]) {
@@ -31,9 +35,10 @@ const getMines = async () => {
 {/**
  *
  * @param {String} id - Unique identifier for mine being fetched
+ * @param {String} platform - The platform to fetch from
 */}
-const getMine = async (id) => {
-  const rows = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.mine, range: "Mine!A2:ZZ"});
+const getMine = async (id, platform) => {
+  const rows = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].mine, range: "Mine!A2:ZZ"});
 
   const found = rows.data.values.filter((single)=>single[0] === id);
 
@@ -59,10 +64,11 @@ const getMine = async (id) => {
 {/**
  *
  * @param {String} id - Unique identifier for mine being fetched
+ * @param {String} platform - The platform to fetch from
 */}
-const getMineImages = async (id) => {
+const getMineImages = async (id, platform) => {
   const images = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.mine_image, range: "Mine Image!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].mine_image, range: "Mine Image!A:ZZ"});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Image")] && item[header.indexOf("Mine")] === id);
   for await (const row of rows.reverse()) {
@@ -76,11 +82,12 @@ const getMineImages = async (id) => {
 {/**
  *
  * @param {String} id - Unique identifier for mine being fetched
+ * @param {String} platform - The platform to fetch from
 */}
-const getMineVideos = async (id) => {
+const getMineVideos = async (id, platform) => {
   const videos = [];
   const files = await getVideos();
-  const rows = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.mine_image, range: "Mine Image!A2:Z"});
+  const rows = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].mine_image, range: "Mine Image!A2:Z"});
 
   rows.data.values.map((video)=>{
     if (video[0]) {

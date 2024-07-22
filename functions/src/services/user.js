@@ -161,7 +161,7 @@ const updateUserStatus = async (uid)=>{
   }
 };
 
-const updateUser = async (uid, name, surname, email)=>{
+const updateUser = async (uid, name, surname, email, access)=>{
   try {
     const user = await firebase.firestore().collection(`users`).doc(uid).get();
     if (user.data().email !== email) {
@@ -173,6 +173,7 @@ const updateUser = async (uid, name, surname, email)=>{
     await firebase.firestore().collection(`users`).doc(uid).update({
       updated: new Date(),
       name,
+      access,
       surname,
       email,
     });

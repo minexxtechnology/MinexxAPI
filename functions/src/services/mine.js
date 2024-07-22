@@ -25,11 +25,14 @@ const getMines = async (platform) => {
     }
   });
 
-  // if (user.type === `buyer`) {
-  //   mines = mines.filter((mine)=>user.companies.includes(mine.company));
-  // }
-
   return mines;
+};
+
+const getMiners = async (concession) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.gold.miners, range: "Miners!A:ZZ"});
+  const header = results.data.values[0];
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")]);
+  return {miners: rows.filter((row)=>row[header.indexOf(`Mine/Concession Name`)] === concession), header};
 };
 
 {/**
@@ -105,6 +108,7 @@ const getMineVideos = async (id, platform) => {
 
 module.exports = {
   getMines,
+  getMiners,
   getMineImages,
   getMineVideos,
   getMine,

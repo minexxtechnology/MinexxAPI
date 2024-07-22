@@ -254,34 +254,41 @@ const getSystemLogs = async () => {
   return logs;
 };
 
-const getTraceProduction = async (id) => {
-  const production = [];
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].production, range: "Production!A:ZZ"});
-  const header = results.data.values[0];
-  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Company Name")] === id);
+const getTraceProduction = async (id, platform) => {
+  if (platform === "3ts") {
+    const production = [];
+    const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].production, range: platform === "3ts" ? "Production!A:ZZ" : "Buy!A:ZZ"});
+    const header = results.data.values[0];
+    const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Company Name")] === id);
 
-  for await (const row of rows.reverse()) {
-    let image;
-    try {
-      if (id !== "ce62eb6j") {
-        image = await getFile(row[header.indexOf(`Picture`)].split(`/`)[1]);
-      }
-    } catch (err) {/* empty */}
-    const prod = {
-      weight: row[header.indexOf(`Production Weight (Kg)`)],
-      location: row[header.indexOf(`Business Location`)],
-      rmbRep: row[header.indexOf(`Name of RMB Representative`)],
-      traceAgent: row[header.indexOf(`Traceability Agent`)],
-      operator: row[header.indexOf(`Name of Operator Representative`)],
-      bags: row[header.indexOf(`Number of Bags`)],
-      totalWeight: row[header.indexOf(`Total Weight (Kg)`)],
-      note: row[header.indexOf(`Note`)],
-      picture: image,
-    };
-    production.push(prod);
+    for await (const row of rows.reverse()) {
+      let image;
+      try {
+        if (id !== "ce62eb6j") {
+          image = await getFile(row[header.indexOf(`Picture`)].split(`/`)[1]);
+        }
+      } catch (err) {/* empty */}
+      const prod = {
+        weight: row[header.indexOf(`Production Weight (Kg)`)],
+        location: row[header.indexOf(`Business Location`)],
+        rmbRep: row[header.indexOf(`Name of RMB Representative`)],
+        traceAgent: row[header.indexOf(`Traceability Agent`)],
+        operator: row[header.indexOf(`Name of Operator Representative`)],
+        bags: row[header.indexOf(`Number of Bags`)],
+        totalWeight: row[header.indexOf(`Total Weight (Kg)`)],
+        note: row[header.indexOf(`Note`)],
+        picture: image,
+      };
+      production.push(prod);
+    }
+
+    return production;
+  } else {
+    const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.gold.production, range: "Buy!A:ZZ"});
+    const header = results.data.values[0];
+    const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Transaction Unique ID")]);
+    return {production: rows, header};
   }
-
-  return production;
 };
 
 const getTraceBagsProduced = async (id) => {
@@ -423,6 +430,20 @@ const getTraceDrums = async (id) => {
   return drums;
 };
 
+const getTraceBlending = async (id) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].blending, range: "Blending!A:ZZ"});
+  const header = results.data.values[0];
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Company Name")] === id);
+  return {header, rows};
+};
+
+const getTracePurchase = async (id) => {
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["gold"].purchase_tracker, range: "Sell!A:ZZ"});
+  const header = results.data.values[0];
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Transaction Unique ID")] && item[header.indexOf("Seller")] === id);
+  return {header, rows};
+};
+
 module.exports = {
   getPurchases,
   getAdminDaily,
@@ -430,9 +451,11 @@ module.exports = {
   getBalanceReport,
   getPurchaseReport,
   getSystemLogs,
+  getTracePurchase,
   getTraceProduction,
   getTraceBagsProduced,
   getTraceProcessing,
   getTraceBagsProcessed,
   getTraceDrums,
+  getTraceBlending,
 };

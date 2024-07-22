@@ -1,76 +1,66 @@
 const Export = require("../model/export");
 const {sheets, spreadsheets} = require("../utils/connect");
-const logger = require("../utils/logger");
 const {getCompany} = require("./company");
 const {getFile} = require("./file");
 
 const getExports = async (user, dashboard) => {
-  if (user == null) {
-    throw new Error("You're missing valid session credentials.");
-  }
   const exports = [];
   const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[dashboard].export, range: `${dashboard === "3ts" ? "Export" : "Gold"}!A:ZZ`});
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf(dashboard === "3ts" ? "Exportation ID" : "Transaction Unique ID")]);
 
-  for await (const single of rows) {
-    const export_ = new Export({
-      id: rows.indexOf(single),
-      blendingID: single[header.indexOf(`Blending ID`)],
-      date: new Date(single[header.indexOf(`Date`)]),
-      mineral: single[header.indexOf(`Mineral Type`)],
-      grade: single[header.indexOf(`Grade `)],
-      value: single[header.indexOf(`Export value (USD)`)],
-      netWeight: single[header.indexOf(`Net Weight (kg)`)],
-      grossWeight: single[header.indexOf(`Gross Weight (kg)`)],
-      stockBalance: single[header.indexOf(`Stock Balance`)],
-      exportationID: single[header.indexOf(`Exportation ID`)],
-      rmbRep: single[header.indexOf(`RMB Representative`)],
-      exportRep: single[header.indexOf(`Exporter Representative`)],
-      traceabilityAgent: single[header.indexOf(`Traceability Agent`)],
-      destination: single[header.indexOf(`Destination`)],
-      itinerary: single[header.indexOf(`Itinerary`)],
-      shipmentNumber: single[header.indexOf(`Shipment Number`)],
-      exportCert: single[header.indexOf(`Export Certificate Number`)],
-      rraCert: single[header.indexOf(`RRA certificate Number`)],
-      transporter: single[header.indexOf(`Transporter`)],
-      driverID: single[header.indexOf(`ID Number of the driver`)],
-      truckFrontPlate: single[header.indexOf(`Truck Plate Number - Front`)],
-      truckBackPlate: single[header.indexOf(`Truck Plate Number - Back`)],
-      tags: single[header.indexOf(`Number of tags`)],
-      totalGrossWeight: single[header.indexOf(`Total Gross Weight(kg)`)],
-      totalNetWeight: single[header.indexOf(`Total Net Weight(kg)`)],
-      company: single[header.indexOf(`Company Name`)],
-      itsciForms: single[header.indexOf(`All ITSCI forms (mine & processing, export) signed and scanned`)],
-      note: single[header.indexOf(`Note`)],
-      picture: single[header.indexOf(`Picture`)],
-      otherDocument: single[header.indexOf(`Other Document`)],
-      transporterDocument: single[header.indexOf(`Transporter Document`)],
-      asiDocument: single[header.indexOf(`ASI Document`)],
-      rraExportDocument: single[header.indexOf(`RRA Export Document`)],
-      rmbExportDocument: single[header.indexOf(`RMB Export Document`)],
-      exporterApplicationDocument: single[header.indexOf(`Exporter Application Document`)],
-      scannedExportDocuments: single[header.indexOf(`Scanned Export Documents`)],
-      link: single[header.indexOf(`Track`)],
-    });
-
-    try {
-      export_.company = await getCompany(export_.company, dashboard);
-    } catch (err) {
-      logger.warn("/exports", err.message, user.email, null);
-    }
-    if (user.type == `buyer`) {
-      if (user.minerals) {
-        if (user.minerals.includes(export_.mineral)) {
-          exports.push(export_);
-        }
+  if (dashboard === "3ts") {
+    for await (const single of rows) {
+      const export_ = new Export({
+        id: rows.indexOf(single),
+        blendingID: single[header.indexOf(`Blending ID`)],
+        date: single[header.indexOf(`Date`)],
+        mineral: single[header.indexOf(`Mineral Type`)],
+        grade: single[header.indexOf(`Grade `)],
+        value: single[header.indexOf(`Export value (USD)`)],
+        netWeight: single[header.indexOf(`Net Weight (kg)`)],
+        grossWeight: single[header.indexOf(`Gross Weight (kg)`)],
+        stockBalance: single[header.indexOf(`Stock Balance`)],
+        exportationID: single[header.indexOf(`Exportation ID`)],
+        rmbRep: single[header.indexOf(`RMB Representative`)],
+        exportRep: single[header.indexOf(`Exporter Representative`)],
+        traceabilityAgent: single[header.indexOf(`Traceability Agent`)],
+        destination: single[header.indexOf(`Destination`)],
+        itinerary: single[header.indexOf(`Itinerary`)],
+        shipmentNumber: single[header.indexOf(`Shipment Number`)],
+        exportCert: single[header.indexOf(`Export Certificate Number`)],
+        rraCert: single[header.indexOf(`RRA certificate Number`)],
+        transporter: single[header.indexOf(`Transporter`)],
+        driverID: single[header.indexOf(`ID Number of the driver`)],
+        truckFrontPlate: single[header.indexOf(`Truck Plate Number - Front`)],
+        truckBackPlate: single[header.indexOf(`Truck Plate Number - Back`)],
+        tags: single[header.indexOf(`Number of tags`)],
+        totalGrossWeight: single[header.indexOf(`Total Gross Weight(kg)`)],
+        totalNetWeight: single[header.indexOf(`Total Net Weight(kg)`)],
+        company: single[header.indexOf(`Company Name`)],
+        itsciForms: single[header.indexOf(`All ITSCI forms (mine & processing, export) signed and scanned`)],
+        note: single[header.indexOf(`Note`)],
+        picture: single[header.indexOf(`Picture`)],
+        otherDocument: single[header.indexOf(`Other Document`)],
+        transporterDocument: single[header.indexOf(`Transporter Document`)],
+        asiDocument: single[header.indexOf(`ASI Document`)],
+        rraExportDocument: single[header.indexOf(`RRA Export Document`)],
+        rmbExportDocument: single[header.indexOf(`RMB Export Document`)],
+        exporterApplicationDocument: single[header.indexOf(`Exporter Application Document`)],
+        scannedExportDocuments: single[header.indexOf(`Scanned Export Documents`)],
+        link: single[header.indexOf(`Track`)],
+      });
+      try {
+        export_.company = await getCompany(export_.company, dashboard);
+      } catch (err) {
+        throw new Error(err.message);
       }
-    } else {
       exports.push(export_);
     }
+    return exports.reverse();
+  } else {
+    return {header, rows};
   }
-
-  return exports.reverse();
 };
 
 const getCompanyExports = async (id, dashboard) => {
@@ -79,55 +69,58 @@ const getCompanyExports = async (id, dashboard) => {
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf(dashboard === "3ts" ? "Exportation ID" : "Transaction Unique ID")] && item[header.indexOf(`${dashboard === "3ts" ? "Company Name" : "Company name"}`)] === id);
 
-  for await (const single of rows) {
-    const export_ = new Export({
-      id: rows.indexOf(single),
-      blendingID: single[header.indexOf(`Blending ID`)],
-      date: single[header.indexOf(`Date`)],
-      mineral: single[header.indexOf(`Mineral Type`)],
-      grade: single[header.indexOf(`Grade `)],
-      value: single[header.indexOf(`Export value (USD)`)],
-      netWeight: single[header.indexOf(`Net Weight (kg)`)],
-      grossWeight: single[header.indexOf(`Gross Weight (kg)`)],
-      stockBalance: single[header.indexOf(`Stock Balance`)],
-      exportationID: single[header.indexOf(`Exportation ID`)],
-      rmbRep: single[header.indexOf(`RMB Representative`)],
-      exportRep: single[header.indexOf(`Exporter Representative`)],
-      traceabilityAgent: single[header.indexOf(`Traceability Agent`)],
-      destination: single[header.indexOf(`Destination`)],
-      itinerary: single[header.indexOf(`Itinerary`)],
-      shipmentNumber: single[header.indexOf(`Shipment Number`)],
-      exportCert: single[header.indexOf(`Export Certificate Number`)],
-      rraCert: single[header.indexOf(`RRA certificate Number`)],
-      transporter: single[header.indexOf(`Transporter`)],
-      driverID: single[header.indexOf(`ID Number of the driver`)],
-      truckFrontPlate: single[header.indexOf(`Truck Plate Number - Front`)],
-      truckBackPlate: single[header.indexOf(`Truck Plate Number - Back`)],
-      tags: single[header.indexOf(`Number of tags`)],
-      totalGrossWeight: single[header.indexOf(`Total Gross Weight(kg)`)],
-      totalNetWeight: single[header.indexOf(`Total Net Weight(kg)`)],
-      company: single[header.indexOf(`Company Name`)],
-      itsciForms: single[header.indexOf(`All ITSCI forms (mine & processing, export) signed and scanned`)],
-      note: single[header.indexOf(`Note`)],
-      picture: single[header.indexOf(`Picture`)],
-      otherDocument: single[header.indexOf(`Other Document`)],
-      transporterDocument: single[header.indexOf(`Transporter Document`)],
-      asiDocument: single[header.indexOf(`ASI Document`)],
-      rraExportDocument: single[header.indexOf(`RRA Export Document`)],
-      rmbExportDocument: single[header.indexOf(`RMB Export Document`)],
-      exporterApplicationDocument: single[header.indexOf(`Exporter Application Document`)],
-      scannedExportDocuments: single[header.indexOf(`Scanned Export Documents`)],
-      link: single[header.indexOf(`Track`)],
-    });
-    try {
-      export_.company = await getCompany(export_.company, dashboard);
-    } catch (err) {
-      throw new Error(err.message);
+  if (dashboard === "3ts") {
+    for await (const single of rows) {
+      const export_ = new Export({
+        id: rows.indexOf(single),
+        blendingID: single[header.indexOf(`Blending ID`)],
+        date: single[header.indexOf(`Date`)],
+        mineral: single[header.indexOf(`Mineral Type`)],
+        grade: single[header.indexOf(`Grade `)],
+        value: single[header.indexOf(`Export value (USD)`)],
+        netWeight: single[header.indexOf(`Net Weight (kg)`)],
+        grossWeight: single[header.indexOf(`Gross Weight (kg)`)],
+        stockBalance: single[header.indexOf(`Stock Balance`)],
+        exportationID: single[header.indexOf(`Exportation ID`)],
+        rmbRep: single[header.indexOf(`RMB Representative`)],
+        exportRep: single[header.indexOf(`Exporter Representative`)],
+        traceabilityAgent: single[header.indexOf(`Traceability Agent`)],
+        destination: single[header.indexOf(`Destination`)],
+        itinerary: single[header.indexOf(`Itinerary`)],
+        shipmentNumber: single[header.indexOf(`Shipment Number`)],
+        exportCert: single[header.indexOf(`Export Certificate Number`)],
+        rraCert: single[header.indexOf(`RRA certificate Number`)],
+        transporter: single[header.indexOf(`Transporter`)],
+        driverID: single[header.indexOf(`ID Number of the driver`)],
+        truckFrontPlate: single[header.indexOf(`Truck Plate Number - Front`)],
+        truckBackPlate: single[header.indexOf(`Truck Plate Number - Back`)],
+        tags: single[header.indexOf(`Number of tags`)],
+        totalGrossWeight: single[header.indexOf(`Total Gross Weight(kg)`)],
+        totalNetWeight: single[header.indexOf(`Total Net Weight(kg)`)],
+        company: single[header.indexOf(`Company Name`)],
+        itsciForms: single[header.indexOf(`All ITSCI forms (mine & processing, export) signed and scanned`)],
+        note: single[header.indexOf(`Note`)],
+        picture: single[header.indexOf(`Picture`)],
+        otherDocument: single[header.indexOf(`Other Document`)],
+        transporterDocument: single[header.indexOf(`Transporter Document`)],
+        asiDocument: single[header.indexOf(`ASI Document`)],
+        rraExportDocument: single[header.indexOf(`RRA Export Document`)],
+        rmbExportDocument: single[header.indexOf(`RMB Export Document`)],
+        exporterApplicationDocument: single[header.indexOf(`Exporter Application Document`)],
+        scannedExportDocuments: single[header.indexOf(`Scanned Export Documents`)],
+        link: single[header.indexOf(`Track`)],
+      });
+      try {
+        export_.company = await getCompany(export_.company, dashboard);
+      } catch (err) {
+        throw new Error(err.message);
+      }
+      exports.push(export_);
     }
-    exports.push(export_);
+    return exports.reverse();
+  } else {
+    return {header, rows};
   }
-
-  return exports;
 };
 
 {/**

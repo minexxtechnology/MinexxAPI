@@ -5,9 +5,8 @@ const {get} = require("lodash");
 const getCompaniesHandler = async (req, res) => {
   try {
     const {user} = res.locals;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const companies = await getCompanies(user, platform);
-
+    const platform = get(req, `headers.x-platform`);
+    const companies = await getCompanies(user, platform || "3ts");
     res.send({
       success: true,
       companies,
@@ -23,8 +22,8 @@ const getCompaniesHandler = async (req, res) => {
 const getCompanyHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const company = await getCompany(id, platform);
+    const platform = get(req, `headers.x-platform`);
+    const company = await getCompany(id, platform || "3ts");
 
     res.send({
       success: true,
@@ -41,8 +40,8 @@ const getCompanyHandler = async (req, res) => {
 const getCompanyBenficialOwnersHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const beneficialOwners = await getCompanyBeneficialOwners(id, platform);
+    const platform = get(req, `headers.x-platform`);
+    const beneficialOwners = await getCompanyBeneficialOwners(id, platform || "3ts");
 
     res.send({
       success: true,
@@ -59,8 +58,8 @@ const getCompanyBenficialOwnersHandler = async (req, res) => {
 const getCompanyShareholdersHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const shareholders = await getCompanyShareholders(id, platform);
+    const platform = get(req, `headers.x-platform`);
+    const shareholders = await getCompanyShareholders(id, platform || "3ts");
 
     res.send({
       success: true,
@@ -77,8 +76,8 @@ const getCompanyShareholdersHandler = async (req, res) => {
 const getCompanyDocumentsHandler = async (req, res) => {
   try {
     const {id} = req.params;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const documents = await getCompanyDocuments(id, platform);
+    const platform = get(req, `headers.x-platform`);
+    const documents = await getCompanyDocuments(id, platform || "3ts");
 
     res.send({
       success: true,

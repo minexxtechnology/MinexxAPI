@@ -1,9 +1,10 @@
-const {getPurchases, getDailyReport, getBalanceReport, getPurchaseReport, getSystemLogs, getTraceProduction, getTraceBagsProduced, getTraceProcessing, getTraceBagsProcessed, getTraceDrums, getAdminDaily} = require("../services/reporting");
+const {getPurchases, getDailyReport, getBalanceReport, getPurchaseReport, getSystemLogs, getTraceProduction, getAdminDaily, getTraceBagsProduced, getTraceBagsProcessed, getTraceProcessing, getTraceDrums, getTraceBlending, getTracePurchase} = require("../services/reporting");
 const {requireUser} = require("../middleware/requireUser");
 const {requireAdmin} = require("../middleware/requireAdmin");
 const logger = require("../utils/logger");
 const {getSessions} = require("../services/session");
 const {getCompanyExports} = require("../services/export");
+const {get} = require("lodash");
 
 const getPurchasesHandler = async (req, res) => {
   const {user} = res.locals;
@@ -146,22 +147,27 @@ const getTraceReport = async (req, res) => {
   const {user} = res.locals;
   try {
     const {id} = req.params;
-    const production = await getTraceProduction(id);
+    const platform = get(req, `headers.x-platform`) || `3ts`;
+    const production = await getTraceProduction(id, platform);
     const bags = await getTraceBagsProduced(id);
     const processing = await getTraceProcessing(id);
     const bagsProc = await getTraceBagsProcessed(id);
+    const purchases = await getTracePurchase(id);
+    const blending = await getTraceBlending(id);
     const drums = await getTraceDrums(id);
-    const exports = await getCompanyExports(id);
+    const exports = await getCompanyExports(id, platform || `3ts`);
     logger.success(req.originalUrl, "Request to specified endpoint was successful", user.email, req.header("x-forwarded-for") || req.socket.remoteAddress);
     return res.send({
       success: true,
       trace: {
         production,
         bags,
+        blending,
         processing,
         bags_proc: bagsProc,
         drums,
         exports,
+        purchases,
       },
     });
   } catch (err) {

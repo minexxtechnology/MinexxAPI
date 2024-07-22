@@ -5,8 +5,8 @@ const {get} = require("lodash");
 const getAssessmentsHandler = async (req, res) => {
   try {
     const {user} = res.locals;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const {assessments, header} = await getAssessments(user, platform);
+    const platform = get(req, `headers.x-platform`);
+    const {assessments, header} = await getAssessments(user, platform || `3ts`);
 
     res.send({
       success: true,
@@ -25,8 +25,8 @@ const getMineAssessmentHandler = async (req, res) => {
   try {
     const {id} = req.params;
     const {user} = res.locals;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const {assessments, header} = await getMineAssessments(id, user, platform);
+    const platform = get(req, `headers.x-platform`);
+    const {assessments, header} = await getMineAssessments(id, user, platform || `3ts`);
 
     res.send({
       success: true,

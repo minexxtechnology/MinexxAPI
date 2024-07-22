@@ -1,7 +1,7 @@
 const {google} = require("googleapis");
 const spreadsheets = require("./sheets.json");
 const admin = require("firebase-admin");
-const account = require(`./minexx-dashboard-firebase-adminsdk-7c5hv-e3898ead71.json`);
+const account = require(`./minexx-dashboard-firebase-adminsdk-7c5hv-f2c9f62886.json`);
 
 const firebase = admin.initializeApp({
   credential: admin.credential.cert(account),

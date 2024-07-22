@@ -5,8 +5,8 @@ const {get} = require("lodash");
 const getAssessmentsOverview = async (req, res) => {
   try {
     const {user} = res.locals;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const assessments = await assessmentsOverview(user, platform);
+    const platform = get(req, `headers.x-platform`);
+    const assessments = await assessmentsOverview(user, platform || `3ts`);
     res.send({
       success: false,
       ...assessments,
@@ -22,8 +22,8 @@ const getAssessmentsOverview = async (req, res) => {
 const getExportsOverview = async (req, res) => {
   try {
     const {user} = res.locals;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const exports = await exportsOverview(user, platform);
+    const platform = get(req, `headers.x-platform`);
+    const exports = await exportsOverview(user, platform || `3ts`);
     res.send({
       success: false,
       ...exports,
@@ -39,8 +39,8 @@ const getExportsOverview = async (req, res) => {
 const getIncidentsOverview = async (req, res) => {
   try {
     const {user} = res.locals;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const incidents = await incidentsOverview(user, platform);
+    const platform = get(req, `headers.x-platform`);
+    const incidents = await incidentsOverview(user, platform || `3ts`);
     res.send({
       success: false,
       ...incidents,
@@ -56,8 +56,8 @@ const getIncidentsOverview = async (req, res) => {
 const getIncidentRisks = async (req, res) => {
   try {
     const {user} = res.locals;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const risks = await incidentRisks(user, platform);
+    const platform = get(req, `headers.x-platform`);
+    const risks = await incidentRisks(user, platform || `3ts`);
     res.send({
       success: false,
       risks,

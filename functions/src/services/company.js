@@ -52,7 +52,7 @@ const getCompany = async (id, platform) => {
   const header = results.data.values[0];
   const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")] && item[header.indexOf("Unique ID")] === id );
 
-  if (rows.length === 0) {
+  if (rows.length == 0) {
     throw new Error("The company with the unique identifier was not found on our records.");
   }
 

@@ -28,6 +28,7 @@ class User{
         this.status = input.status || `active`
         this.type = input.type || `minexx`
         this.company = input.company || null
+        this.access = input.access || '3ts'
         this.created = input.created || new Date()
         this.updated = input.updated || new Date()
         this.lastLogin = input.lastLogin || new Date()

@@ -110,29 +110,29 @@ MTD Actuals vs Target (%):    ${(((report.wolframite.mtdActual/1000)/((report.wo
   doc1.fontSize(20).text(`In-Stock Country Balance - ${new Date().toISOString().substring(0, 10)}`);
   doc1.fontSize(14).text(`\n\nCASSITERITE`);
   doc1.fontSize(11);
-  doc1.text(`With Minexx (TONS):    ${(balance.cassiterite.minexx/1000).toFixed(2)}
-With RMR (TONS)    ${(balance.cassiterite.rmr/1000).toFixed(2)}
-With Buyer (SOLD)    ${(balance.cassiterite.buyer/1000).toFixed(2)}
+  doc1.text(`With RMR (TONS):    ${(balance.cassiterite.rmr/1000).toFixed(2)}
+With Minexx (TONS)    ${(balance.cassiterite.minexx/1000).toFixed(2)}
 Pending Shipment (TONS)    ${(balance.cassiterite.pending/1000).toFixed(2)}
-Shipped (TONS)    ${(balance.cassiterite.shipped/1000).toFixed(2)}`, {
+Shipped (TONS)    ${(balance.cassiterite.shipped/1000).toFixed(2)}
+With Buyer (SOLD)    ${(balance.cassiterite.buyer/1000).toFixed(2)}`, {
     align: "left",
   });
   doc1.fontSize(14).text(`\n\nCOLTAN`);
   doc1.fontSize(11);
-  doc1.text(`With Minexx (TONS):    ${(balance.coltan.minexx/1000).toFixed(2)}
-With RMR (TONS)    ${(balance.coltan.rmr/1000).toFixed(2)}
-With Buyer (SOLD)    ${(balance.coltan.buyer/1000).toFixed(2)}
+  doc1.text(`With RMR (TONS):    ${(balance.coltan.rmr/1000).toFixed(2)}
+With Minexx (TONS)    ${(balance.coltan.minexx/1000).toFixed(2)}
 Pending Shipment (TONS)    ${(balance.coltan.pending/1000).toFixed(2)}
-Shipped (TONS)    ${(balance.coltan.shipped/1000).toFixed(2)}`, {
+Shipped (TONS)    ${(balance.coltan.shipped/1000).toFixed(2)}
+With Buyer (SOLD)    ${(balance.coltan.buyer/1000).toFixed(2)}`, {
     align: "left",
   });
   doc1.fontSize(14).text(`\n\nWOLFRAMITE`);
   doc1.fontSize(11);
-  doc1.text(`With Minexx (TONS):    ${(balance.wolframite.minexx/1000).toFixed(2)}
-With RMR (TONS)    ${(balance.wolframite.rmr/1000).toFixed(2)}
-With Buyer (SOLD)    ${(balance.wolframite.buyer/1000).toFixed(2)}
+  doc1.text(`With RMR (TONS):    ${(balance.wolframite.rmr/1000).toFixed(2)}
+With Minexx (TONS)    ${(balance.wolframite.minexx/1000).toFixed(2)}
 Pending Shipment (TONS)    ${(balance.wolframite.pending/1000).toFixed(2)}
-Shipped (TONS)    ${(balance.wolframite.shipped/1000).toFixed(2)}`, {
+Shipped (TONS)    ${(balance.wolframite.shipped/1000).toFixed(2)}
+With Buyer (SOLD)    ${(balance.wolframite.buyer/1000).toFixed(2)}`, {
     align: "left",
   });
   doc1.end();
@@ -157,7 +157,7 @@ Shipped (TONS)    ${(balance.wolframite.shipped/1000).toFixed(2)}`, {
       from: "\"Minexx\" <minexx.dev@gmail.com>", // sender address
       subject: "Reports Attached | Minexx", // Subject line
       to: "b.akaffou@minexx.co", // sender address
-      bcc: "o.devreese@minexx.co,mansoor@minexx.co,n.muhizi@minexx.co,laurent@minexx.co,marcus@minexx.co,e.beau@minexx.co,t.qureshi@minexx.co,habimanar@minexx.co",
+      bcc: "o.devreese@minexx.co,mansoor@minexx.co,n.muhizi@minexx.co,laurent@minexx.co,marcus@minexx.co,e.beau@minexx.co,t.qureshi@minexx.co,habimanar@minexx.co,e.runanira@minexx.co",
       text: "Please find attached the subject mentioned.\n\nRegards,\n\nMinexx",
       html: `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -640,6 +640,7 @@ Shipped (TONS)    ${(balance.wolframite.shipped/1000).toFixed(2)}`, {
 };
 
 app.get("/", async (req, res)=>{
+  await emailReports();
   res.send({
     success: true,
     message: "The API is stable. All endpoints are responding normally",

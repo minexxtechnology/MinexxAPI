@@ -177,8 +177,8 @@ const updateUserStatusHandler = async (req, res) => {
 const updateUserHandler = async (req, res) => {
   try {
     const {uid} = req.params;
-    const {name, surname, email} = req.body;
-    const updated = await updateUser(uid, name, surname, email);
+    const {name, surname, email, access} = req.body;
+    const updated = await updateUser(uid, name, surname, email, access);
     return res.send({
       updated,
       success: true,

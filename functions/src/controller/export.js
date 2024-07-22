@@ -6,7 +6,7 @@ const {get} = require("lodash");
 const getExportsHandler = async (req, res) => {
   const {user} = res.locals;
   try {
-    const platform = get(req, `headers.x-platform`) || "3ts";
+    const platform = get(req, `headers.x-platform`) || `3ts`;
     const exports = await getExports(user, platform);
     logger.success(req.originalUrl, "Request to specified endpoint was successful", user.email, req.header("x-forwarded-for") || req.socket.remoteAddress);
     res.send({
@@ -27,9 +27,8 @@ const getExportHandler = async (req, res) => {
   const {user} = res.locals;
   try {
     const {id} = req.params;
-    const platform = get(req, `headers.x-platform`) || "3ts";
-    const export_ = await getExport(id, platform);
-
+    const platform = get(req, `headers.x-platform`);
+    const export_ = await getExport(id, platform || "3ts");
     logger.success(req.originalUrl, "Request to specified endpoint was successful", user.email, req.header("x-forwarded-for") || req.socket.remoteAddress);
     res.send({
       success: true,

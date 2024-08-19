@@ -22,6 +22,7 @@ const mines = require("./src/controller/mine.js");
 const users = require("./src/controller/user.js");
 const reporting = require("./src/controller/reporting.js");
 const integrations = require("./src/controller/integrations.js");
+const documentation = require("./src/controller/documentation.js");
 const {getDailyReport, getBalanceReport} = require("./src/services/reporting.js");
 const {startOfMonth, isBefore, isWeekend} = require("date-fns");
 const {success, error} = require("./src/utils/logger.js");
@@ -49,6 +50,7 @@ mines(app);
 users(app);
 reporting(app);
 integrations(app);
+documentation(app);
 
 const emailReports = async () => {
   let days = 0;
@@ -640,7 +642,6 @@ With Buyer (SOLD)    ${(balance.wolframite.buyer/1000).toFixed(2)}`, {
 };
 
 app.get("/", async (req, res)=>{
-  await emailReports();
   res.send({
     success: true,
     message: "The API is stable. All endpoints are responding normally",
@@ -659,3 +660,5 @@ exports.scheduledCronJobs = functions.pubsub.schedule("0 17 * * MON-FRI").timeZo
 });
 
 exports.minexx = onRequest(app);
+
+exports.app = app;

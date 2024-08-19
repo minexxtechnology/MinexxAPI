@@ -58,7 +58,7 @@ const exportsOverview = async (user, platform)=> {
     new Date(),
   ];
   response.map((single)=>{
-    volume += Number(single.netWeight);
+    volume += platform === "3ts" ? Number(single.netWeight) : Number(single.netWeight)/1000;
     months.map((month, i)=>{
       if (moment(single.date).isBetween(month, months[i+1]) && i < 7) {
         exports[i] += 1;

@@ -17,7 +17,7 @@ const getPurchases = async () => {
   return purchases;
 };
 
-const getAdminDaily = async (selection) => {
+const getAdminDaily = async (selection, platform) => {
   const report = [];
   const dates = [];
   for (let x = 0; x < 7; x++) {
@@ -28,18 +28,24 @@ const getAdminDaily = async (selection) => {
   let date = "Production Date";
   let results;
   if (selection == "production") {
-    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].production, range: "Production!A:ZZ"});
-    field = "Production Weight (Kg)";
-    date = "Production Date";
+    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].production, range: platform === "3ts" ? "Production!A:ZZ" : "Sell!A:ZZ"});
+    field = platform === "3ts" ? "Production Weight (Kg)" : "Weight (g)";
+    date = platform === "3ts" ? "Production Date" : "Date";
   }
   if (selection == "blending") {
-    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].blending, range: "Blending!A:ZZ"});
+    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].blending, range: "Blending!A:ZZ"});
     field = "Total Output Weight(kg)";
     date = "Blending Date";
   }
   if (selection == "processing") {
-    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].processing, range: "Processing!A:ZZ"});
+    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets[platform].processing, range: "Processing!A:ZZ"});
     field = "Processing Weight (kg)";
+    date = "Date";
+  }
+
+  if (selection == "purchase") {
+    results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["gold"].purchase, range: "Buy!A:ZZ"});
+    field = "Weight (g)";
     date = "Date";
   }
 
@@ -49,7 +55,7 @@ const getAdminDaily = async (selection) => {
   for await (const row of rows) {
     for (const day of dates) {
       if (fns.isSameDay(day, moment(row[header.indexOf(date)]).toDate())) {
-        report[day.toUTCString().substring(0, 3)] += Number(row[header.indexOf(field)])/1000;
+        report[day.toUTCString().substring(0, 3)] += platform === "3ts" ? Number(row[header.indexOf(field)])/1000 : Number(row[header.indexOf(field)])/1000000;
       }
     }
   }
@@ -257,26 +263,26 @@ const getSystemLogs = async () => {
 const getTraceProduction = async (id, platform) => {
   if (platform === "3ts") {
     const production = [];
-    const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].production, range: platform === "3ts" ? "Production!A:ZZ" : "Buy!A:ZZ"});
+    const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].production, range: platform === "3ts" ? "Production!A:ZZ" : "Sell!A:ZZ"});
     const header = results.data.values[0];
-    const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("ID")] && item[header.indexOf("Company Name")] === id);
+    const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf(platform === "3ts" ? "ID" : "Transaction Unique ID")] && item[header.indexOf(platform === "3ts" ? "Company Name" : "Seller")] === id);
 
     for await (const row of rows.reverse()) {
       let image;
       try {
         if (id !== "ce62eb6j") {
-          image = await getFile(row[header.indexOf(`Picture`)].split(`/`)[1]);
+          image = await getFile(row[header.indexOf(platform === "3ts" ? `Picture` : `Image`)].split(`/`)[1]);
         }
       } catch (err) {/* empty */}
       const prod = {
-        weight: row[header.indexOf(`Production Weight (Kg)`)],
+        weight: row[header.indexOf(platform === "3ts" ? `Production Weight (Kg)` : `Weight (g)`)],
         location: row[header.indexOf(`Business Location`)],
         rmbRep: row[header.indexOf(`Name of RMB Representative`)],
         traceAgent: row[header.indexOf(`Traceability Agent`)],
         operator: row[header.indexOf(`Name of Operator Representative`)],
-        bags: row[header.indexOf(`Number of Bags`)],
-        totalWeight: row[header.indexOf(`Total Weight (Kg)`)],
-        note: row[header.indexOf(`Note`)],
+        bags: row[header.indexOf(platform === "3ts" ? `Number of Bags` : `number of stones (For Diamond only)`)],
+        totalWeight: row[header.indexOf(platform === "3ts" ? `Total Weight (Kg)` : `Weight (g)`)],
+        note: row[header.indexOf(platform === "3ts" ? `Note` : `Notes`)],
         picture: image,
       };
       production.push(prod);
@@ -284,9 +290,9 @@ const getTraceProduction = async (id, platform) => {
 
     return production;
   } else {
-    const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.gold.production, range: "Buy!A:ZZ"});
+    const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets.gold.production, range: "Sell!A:ZZ"});
     const header = results.data.values[0];
-    const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Transaction Unique ID")]);
+    const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf(`Seller`)] === id && item[header.indexOf("Transaction Unique ID")]);
     return {production: rows, header};
   }
 };
@@ -438,9 +444,9 @@ const getTraceBlending = async (id) => {
 };
 
 const getTracePurchase = async (id) => {
-  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["gold"].purchase_tracker, range: "Sell!A:ZZ"});
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["gold"].purchase, range: "Buy!A:ZZ"});
   const header = results.data.values[0];
-  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Transaction Unique ID")] && item[header.indexOf("Seller")] === id);
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Transaction Unique ID")] && item[header.indexOf("Buyer")] === id);
   return {header, rows};
 };
 

@@ -42,6 +42,54 @@ const getCompanies = async (user, platform) => {
   return companies;
 };
 
+const getAllCompanies = async (user) => {
+  const threets = [];
+  const results = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["3ts"].company, range: "Company!A:ZZ"});
+  const header = results.data.values[0];
+  const rows = results.data.values.filter((item, i)=>i>0 && item[header.indexOf("Unique ID")]);
+
+  rows.map((single)=>{
+    const company = new Company({
+      id: single[header.indexOf("Unique ID")],
+      name: single[header.indexOf("Company Name")],
+      address: single[header.indexOf("Company Address")],
+      number: single[header.indexOf("Company Number")],
+      country: single[header.indexOf("Company Country")],
+      type: single[header.indexOf("Type")],
+      created: new Date(single[header.indexOf("Timestamp Signed")]),
+      mining: single[header.indexOf("Mining")] === `TRUE`,
+    });
+    if (user.type === "buyer" || user.type === "investor") {
+      if (company.mining) {
+        threets.push(company);
+      }
+    } else {
+      threets.push(company);
+    }
+  });
+
+  const gold = [];
+  const results1 = await sheets.spreadsheets.values.get({spreadsheetId: spreadsheets["gold"].company, range: "Company!A:ZZ"});
+  const header1 = results1.data.values[0];
+  const rows1 = results1.data.values.filter((item, i)=>i>0 && item[header1.indexOf("Unique ID")]);
+
+  rows1.map((single)=>{
+    const company = new Company({
+      id: single[header1.indexOf("Unique ID")],
+      name: single[header1.indexOf("Company Name")],
+      address: single[header1.indexOf("Company Address")],
+      number: single[header1.indexOf("Company Number")],
+      country: single[header1.indexOf("Company Country")],
+      type: single[header1.indexOf("Type")],
+      created: new Date(single[header1.indexOf("Timestamp Signed")]),
+      mining: single[header1.indexOf("Mining")] === `TRUE`,
+    });
+    gold.push(company);
+  });
+
+  return {threets, gold};
+};
+
 /**
  *
  * @param {String} id - Unique identifier for company being fetched
@@ -158,6 +206,7 @@ const getCompanyDocuments = async (id, platform) => {
 
 module.exports = {
   getCompanies,
+  getAllCompanies,
   getCompany,
   getCompanyDocuments,
   getCompanyShareholders,

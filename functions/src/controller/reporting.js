@@ -51,7 +51,8 @@ const getAdminDailyReportHandler = async (req, res) => {
   try {
     const {user} = res.locals;
     const {selection} = req.params;
-    const report = await getAdminDaily(selection);
+    const platform = get(req, `headers.x-platform`);
+    const report = await getAdminDaily(selection, platform || "3ts");
     logger.success(req.originalUrl, "Request to specified endpoint was successful", user.email, req.header("x-forwarded-for") || req.socket.remoteAddress);
 
     res.send({

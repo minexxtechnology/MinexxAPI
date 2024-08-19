@@ -1,5 +1,5 @@
 const {requireUser} = require("../middleware/requireUser");
-const {getCompanies, getCompany, getCompanyShareholders, getCompanyBeneficialOwners, getCompanyDocuments} = require("../services/company");
+const {getCompanies, getCompany, getCompanyShareholders, getCompanyBeneficialOwners, getCompanyDocuments, getAllCompanies} = require("../services/company");
 const {get} = require("lodash");
 
 const getCompaniesHandler = async (req, res) => {
@@ -7,6 +7,22 @@ const getCompaniesHandler = async (req, res) => {
     const {user} = res.locals;
     const platform = get(req, `headers.x-platform`);
     const companies = await getCompanies(user, platform || "3ts");
+    res.send({
+      success: true,
+      companies,
+    });
+  } catch (err) {
+    res.status(409).send({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const getAllCompaniesHandler = async (req, res) => {
+  try {
+    const {user} = res.locals;
+    const companies = await getAllCompanies(user);
     res.send({
       success: true,
       companies,
@@ -93,6 +109,7 @@ const getCompanyDocumentsHandler = async (req, res) => {
 
 module.exports = (app)=>{
   app.get(`/companies`, requireUser, getCompaniesHandler);
+  app.get(`/companies/all`, requireUser, getAllCompaniesHandler);
   app.get(`/companies/:id`, requireUser, getCompanyHandler);
   app.get(`/owners/:id`, requireUser, getCompanyBenficialOwnersHandler);
   app.get(`/shareholders/:id`, requireUser, getCompanyShareholdersHandler);
